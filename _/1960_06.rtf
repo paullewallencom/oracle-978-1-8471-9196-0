@@ -1,0 +1,541 @@
+{\rtf1\ansi\ansicpg1252\deff0\deflang1033{\fonttbl{\f0\fswiss\fprq2\fcharset0 Arial;}{\f1\fmodern\fprq1\fcharset0 Lucida Console;}{\f2\froman\fprq2\fcharset0 Times New Roman;}{\f3\fswiss\fcharset0 Arial;}}
+{\colortbl ;\red0\green0\blue0;}
+{\stylesheet{ Normal;}{\s1 heading 1;}{\s2 heading 2;}}
+{\*\generator Msftedit 5.41.15.1507;}\viewkind4\uc1\pard\keepn\s2\sb320\sa60\cf1\lang2057\b\f0\fs28 Adding a New Row Containing BFILE\par
+\pard\li360\sa50\cf0\lang1033\b0\f1\fs22 Private Sub btnAdd_Click(ByVal sender As System.Object, \par
+  ByVal e As System.EventArgs) Handles btnAdd.Click\par
+    'create connection to db\par
+    Dim cn As New OracleConnection("Data Source=xe; _\par
+                       User Id=scott;Password=tiger")\par
+    Try\par
+      'create command object \par
+      Dim sb As New System.Text.StringBuilder\par
+      sb.Append(" INSERT INTO EmpPhotos")\par
+      sb.Append(" (empno, photo)")\par
+      sb.Append(" VALUES")\par
+      sb.Append(" (" & Me.txtEmpno.Text & ", ")\par
+\b       sb.Append(" BFILENAME('EMPPHOTOSDIR', '" & \par
+                     Me.txtPhotoPath.Text & "'))")\par
+\b0\par
+      Dim cmd As New OracleCommand\par
+      With cmd\par
+        .CommandText = sb.ToString\par
+        'proceed with execution\par
+        .Connection = cn\par
+        .Connection.Open()\par
+        .ExecuteNonQuery()\par
+        .Connection.Close()\par
+        .Dispose()\par
+      End With\par
+      MessageBox.Show("Succesfully Uploaded")\par
+    Catch ex As Exception\par
+      'display if any error occurs\par
+      MessageBox.Show("Error: " & ex.Message)\par
+      'close the connection if it is still open\par
+      If cn.State = ConnectionState.Open Then\par
+        cn.Close()\par
+      End If\par
+    End Try\par
+\pard\li360\sa120 End Sub\par
+\pard\keepn\s2\sb320\sa60\cf1\lang2057\b\f0\fs28 Updating an Existing BFILE Row\par
+\pard\li360\sa50\cf0\lang1033\b0\f1\fs22 Private Sub btnUpdate_Click(ByVal sender As \par
+  System.Object, ByVal e As System.EventArgs) Handles \par
+  btnUpdate.Click\par
+    'create connection to db\par
+    Dim cn As New OracleConnection("Data Source=xe; _\par
+                       User Id=scott;Password=tiger")\par
+    Try\par
+      'create command object \par
+      Dim sb As New System.Text.StringBuilder\par
+\b       sb.Append(" UPDATE EmpPhotos SET")\par
+      sb.Append("   photo=")\par
+      sb.Append("   BFILENAME('EMPPHOTOSDIR', '" & \par
+                      Me.txtPhotoPath.Text & "')")\par
+      sb.Append(" WHERE empno=" & Me.txtEmpno.Text)\par
+\b0\par
+      Dim cmd As New OracleCommand\par
+      With cmd\par
+        .CommandText = sb.ToString\par
+        'proceed with execution\par
+        .Connection = cn\par
+        .Connection.Open()\par
+        .ExecuteNonQuery()\par
+        .Connection.Close()\par
+        .Dispose()\par
+      End With\par
+      MessageBox.Show("Succesfully Uploaded")\par
+    Catch ex As Exception\par
+      'display if any error occurs\par
+      MessageBox.Show("Error: " & ex.Message)\par
+      'close the connection if it is still open\par
+      If cn.State = ConnectionState.Open Then\par
+        cn.Close()\par
+      End If\par
+    End Try\par
+\pard\li360\sa120 End Sub\par
+\pard\keepn\s2\sb320\sa60\cf1\lang2057\b\f0\fs28 Retrieving BFILE Information from Database\par
+\pard\li360\sa50\cf0\lang1033\b0\f1\fs22 Private Sub btnShow_Click(ByVal sender As System.Object, \par
+  ByVal e As System.EventArgs) Handles btnShow.Click\par
+    'create connection to db\par
+    Dim cn As New OracleConnection("Data Source=xe; _\par
+                       User Id=scott;Password=tiger")\par
+    Try\par
+      'create command object \par
+      Dim sb As New System.Text.StringBuilder\par
+      sb.Append(" SELECT photo FROM EmpPhotos")\par
+      sb.Append(" WHERE empno = " & Me.txtEmpno.Text)\par
+\par
+      Dim cmd As New OracleCommand(sb.ToString, cn)\par
+      With cmd\par
+        .Connection.Open()\par
+        Dim rdr As OracleDataReader = .ExecuteReader\par
+        If rdr.Read Then\par
+\b           Me.PictureBox1.Image = \par
+              Image.FromStream(New IO.MemoryStream\par
+              (rdr.GetOracleBFile(rdr.GetOrdinal\par
+              ("photo")).Value))\par
+\b0         End If\par
+        .Connection.Close()\par
+        .Dispose()\par
+      End With\par
+    Catch ex As Exception\par
+      'display if any error occurs\par
+      MessageBox.Show("Error: " & ex.Message)\par
+      'close the connection if it is still open\par
+      If cn.State = ConnectionState.Open Then\par
+        cn.Close()\par
+      End If\par
+    End Try\par
+\pard\li360\sa120 End Sub\par
+\pard\keepn\s2\sb320\sa60\cf1\lang2057\b\f0\fs28 Retrieving Properties of BFILE \par
+\pard\li360\sa50\cf0\lang1033\b0\f1\fs22 Private Sub btnShowPhoto_Click(ByVal sender As \par
+  System.Object, ByVal e As System.EventArgs) Handles \par
+  btnShowPhoto.Click\par
+    'create connection to db\par
+    Dim cn As New OracleConnection("Data Source=xe; _\par
+                        User Id=scott;Password=tiger")\par
+    Try\par
+      'create command object \par
+      Dim sb As New System.Text.StringBuilder\par
+      sb.Append(" SELECT photo FROM EmpPhotos")\par
+      sb.Append(" WHERE empno = " & Me.txtEmpno.Text)\par
+\par
+      Dim cmd As New OracleCommand(sb.ToString, cn)\par
+      With cmd\par
+        .Connection.Open()\par
+        Dim rdr As OracleDataReader = .ExecuteReader\par
+        If Not rdr.Read Then\par
+          MessageBox.Show("No employee exists")\par
+        Else\par
+          Dim bfile As _\par
+            Oracle.DataAccess.Types.OracleBFile = \par
+            rdr.GetOracleBFile(rdr.GetOrdinal("photo"))\par
+\b           If Not bfile.FileExists Then\par
+\b0             MessageBox.Show("Photo File does not exist\par
+                                           at server")\par
+          Else\par
+\b             If Not bfile.CanRead Then\par
+\b0               MessageBox.Show("You do not have \par
+                        permission to view the photo")\par
+            Else\par
+\b               If bfile.IsEmpty Or bfile.IsNull Then\par
+\b0                 MessageBox.Show("Photo not assigned \par
+                                     to the employee")\par
+              Else\par
+\b                 Dim dir As String = bfile.DirectoryName\par
+                Dim fn As String = bfile.FileName\par
+                Dim size As Long = bfile.Length\par
+\b0                 Me.PictureBox1.Image = \par
+                Image.FromStream(New IO.MemoryStream\par
+                                        (bfile.Value))\par
+                Dim bfiledetails As New _\par
+                            System.Text.StringBuilder\par
+                bfiledetails.Append("Directory:" & dir \par
+                               & ControlChars.NewLine)\par
+                bfiledetails.Append("File Name:" & fn \par
+                               & ControlChars.NewLine)\par
+                bfiledetails.Append("Size:" & size \par
+                              & ControlChars.NewLine)\par
+                MessageBox.Show(bfiledetails.ToString)\par
+              End If 'is null or is empty\par
+            End If 'can read\par
+          End If 'is file exists\par
+        End If 'rdr\par
+        .Connection.Close()\par
+        rdr.Dispose()\par
+        .Dispose()\par
+\par
+      End With\par
+    Catch ex As Exception\par
+      'display if any error occurs\par
+      MessageBox.Show("Error: " & ex.Message)\par
+      'close the connection if it is still open\par
+      If cn.State = ConnectionState.Open Then\par
+        cn.Close()\par
+      End If\par
+    End Try\par
+\pard\li360\sa120 End Sub\lang2057\par
+\pard\keepn\s2\sb320\sa60\cf1\b\f0\fs28 Inserting Huge Text Information into Oracle Database\par
+\pard\li360\sa50\cf0\lang1033\b0\f1\fs22 CREATE TABLE EmpRemarks\par
+(\par
+ empno NUMBER(4) PRIMARY KEY,\par
+\b  remarks CLOB\par
+\pard\li360\sa120\b0 )\par
+\pard\sa120\lang2057\f2 Code which stores huge text into that CLOB column:\par
+\pard\li360\sa50\lang1033\f1 Private Sub btnAdd_Click(ByVal sender As System.Object, \par
+ByVal e As System.EventArgs) Handles btnAdd.Click\par
+    'create connection to db\par
+    Dim cn As New OracleConnection("Data Source=xe; _\par
+                         User Id=scott;Password=tiger")\par
+    Try\par
+      'create command object \par
+      Dim sb As New System.Text.StringBuilder\par
+      sb.Append(" INSERT INTO EmpRemarks")\par
+      sb.Append(" (empno, remarks)")\par
+      sb.Append(" VALUES")\par
+      sb.Append(" (:1,:2)")\par
+\par
+      Dim cmd As New OracleCommand\par
+      With cmd\par
+        .CommandText = sb.ToString\par
+        'define parameters\par
+        Dim p_empno As New OracleParameter(":1", _\par
+                                OracleDbType.Int16)\par
+        p_empno.Value = Me.txtEmpno.Text\par
+\b         Dim p_remarks As New OracleParameter(":2", _\par
+                                 OracleDbType.Clob)\par
+        p_remarks.Size = Me.txtRemarks.Text.Length\par
+        p_remarks.Value = Me.txtRemarks.Text\par
+\b0         .Parameters.Add(p_empno)\par
+\b         .Parameters.Add(p_remarks)\par
+\b0         'proceed with execution\par
+        .Connection = cn\par
+        .Connection.Open()\par
+        .ExecuteNonQuery()\par
+        .Connection.Close()\par
+      End With\par
+      MessageBox.Show("Succesfully added")\par
+    Catch ex As Exception\par
+      'display if any error occurs\par
+      MessageBox.Show("Error: " & ex.Message)\par
+      'close the connection if it is still open\par
+      If cn.State = ConnectionState.Open Then\par
+        cn.Close()\par
+      End If\par
+    End Try\par
+\pard\li360\sa120 End Sub\par
+\pard\keepn\s2\sb320\sa60\cf1\lang2057\b\f0\fs28 Updating CLOB Information Using OracleClob\par
+\pard\li360\sa50\cf0\lang1033\b0\f1\fs22 Private Sub btnUpdate_Click(ByVal sender As \par
+  System.Object, ByVal e As System.EventArgs) Handles \par
+  btnUpdate.Click\par
+    'create connection to db\par
+    Dim cn As New OracleConnection("Data Source=xe; _\par
+                       User Id=scott;Password=tiger")\par
+    Try\par
+      'create command object \par
+      Dim sb As New System.Text.StringBuilder\par
+      sb.Append(" UPDATE EmpRemarks SET")\par
+      sb.Append(" remarks = :1")\par
+      sb.Append(" WHERE empno = :2")\par
+\par
+      Dim cmd As New OracleCommand\par
+      With cmd\par
+        .CommandText = sb.ToString\par
+        'open the connection first\par
+        .Connection = cn\par
+        .Connection.Open()\par
+        'define parameters\par
+\b         Dim objClob As New _\par
+        Oracle.DataAccess.Types.OracleClob(cn)\par
+        objClob.Write(Me.txtRemarks.Text.ToCharArray, \par
+                         0, Me.txtRemarks.Text.Length)\par
+        .Parameters.Add(New OracleParameter(":1", \par
+                                            objClob))\par
+\b0         .Parameters.Add(New OracleParameter(":2", \par
+                                   Me.txtEmpno.Text))\par
+        'proceed with execution\par
+        .ExecuteNonQuery()\par
+        .Connection.Close()\par
+      End With\par
+      MessageBox.Show("Succesfully updated")\par
+    Catch ex As Exception\par
+      'display if any error occurs\par
+      MessageBox.Show("Error: " & ex.Message)\par
+      'close the connection if it is still open\par
+      If cn.State = ConnectionState.Open Then\par
+        cn.Close()\par
+      End If\par
+    End Try\par
+\pard\li360\sa120 End Sub\par
+\pard\keepn\s2\sb320\sa60\cf1\lang2057\b\f0\fs28 Retrieving CLOB Information from Oracle Database \par
+\pard\li360\sa50\cf0\lang1033\b0\f1\fs22 Private Sub btnShow_Click(ByVal sender As System.Object, \par
+  ByVal e As System.EventArgs) Handles btnShow.Click\par
+    Me.txtRemarks.Text = ""\par
+    'create connection to db\par
+    Dim cn As New OracleConnection("Data Source=xe; _\par
+                       User Id=scott;Password=tiger")\par
+    Try\par
+      'create command object \par
+      Dim sb As New System.Text.StringBuilder\par
+      sb.Append(" SELECT remarks FROM EmpRemarks")\par
+      sb.Append(" WHERE empno = " & Me.txtEmpno.Text)\par
+\par
+      Dim cmd As New OracleCommand(sb.ToString, cn)\par
+      With cmd\par
+        .Connection.Open()\par
+\b         Dim rdr As OracleDataReader = .ExecuteReader\par
+\b0         If rdr.Read Then\par
+\b           Me.txtRemarks.Text = \par
+                 rdr.GetOracleClob(rdr.GetOrdinal\par
+                                 ("remarks")).Value\par
+\b0         End If\par
+        .Connection.Close()\par
+      End With\par
+    Catch ex As Exception\par
+      'display if any error occurs\par
+      MessageBox.Show("Error: " & ex.Message)\par
+      'close the connection if it is still open\par
+      If cn.State = ConnectionState.Open Then\par
+        cn.Close()\par
+      End If\par
+    End Try\par
+\pard\li360\sa120   End Sub\par
+\pard\keepn\s2\sb320\sa60\cf1\lang2057\b\f0\fs28 Reading a Text File and Uploading as CLOB\par
+\pard\li360\sa50\cf0\lang1033\b0\f1\fs22 Private Sub btnAdd_Click(ByVal sender As System.Object, \par
+  ByVal e As System.EventArgs) Handles btnAdd.Click\par
+\par
+    If Me.txtRemarksFileName.Text.Trim.Length = 0 Then\par
+      MessageBox.Show("No file chosen")\par
+      Exit Sub\par
+    End If\par
+\par
+    'reading  the file\par
+\b     Dim contents As String = _\par
+    File.ReadAllText(Me.txtRemarksFileName.Text)\par
+\b0     'create connection to db\par
+    Dim cn As New OracleConnection("Data Source=xe; _\par
+                       User Id=scott;Password=tiger")\par
+    Try\par
+      'create command object \par
+      Dim sb As New System.Text.StringBuilder\par
+      sb.Append(" INSERT INTO EmpRemarks")\par
+      sb.Append(" (empno, remarks)")\par
+      sb.Append(" VALUES")\par
+      sb.Append(" (:1,:2)")\par
+\par
+      Dim cmd As New OracleCommand\par
+      With cmd\par
+        .CommandText = sb.ToString\par
+        'define parameters\par
+        Dim p_empno As New OracleParameter(":1", \par
+                              OracleDbType.Int16)\par
+        p_empno.Value = Me.txtEmpno.Text\par
+\b         Dim p_remarks As New OracleParameter(":2", \par
+                                  OracleDbType.Clob)\par
+        p_remarks.Size = contents.Length\par
+        p_remarks.Value = contents\par
+\b0         .Parameters.Add(p_empno)\par
+\b         .Parameters.Add(p_remarks)\par
+\b0         'proceed with execution\par
+        .Connection = cn\par
+        .Connection.Open()\par
+        .ExecuteNonQuery()\par
+        .Connection.Close()\par
+        .Dispose()\par
+      End With\par
+      MessageBox.Show("Succesfully added")\par
+    Catch ex As Exception\par
+      'display if any error occurs\par
+      MessageBox.Show("Error: " & ex.Message)\par
+      'close the connection if it is still open\par
+      If cn.State = ConnectionState.Open Then\par
+        cn.Close()\par
+      End If\par
+    End Try\par
+\pard\li360\sa120 End Sub\par
+\pard\keepn\s2\sb320\sa60\cf1\lang2057\b\f0\fs28 Uploading Images to Oracle Database Using BLOB\par
+\pard\li360\sa50\cf0\lang1033\b0\f1\fs22   Private Sub btnAdd_Click(ByVal sender As System.Object,\par
+  ByVal e As System.EventArgs) Handles btnAdd.Click\par
+    If Me.txtImageFile.Text.Trim.Length = 0 Then\par
+      MessageBox.Show("No file chosen")\par
+      Exit Sub\par
+    End If\par
+\par
+    'Now, read the entire file into a string\par
+\b     Dim contents() As Byte = _\par
+              File.ReadAllBytes(Me.txtImageFile.Text)\par
+\b0\par
+    'create connection to db\par
+    Dim cn As New OracleConnection("Data Source=xe; _\par
+                       User Id=scott;Password=tiger")\par
+    Try\par
+      'create command object \par
+      Dim sb As New System.Text.StringBuilder\par
+      sb.Append(" INSERT INTO EmpImages")\par
+      sb.Append(" (empno, image)")\par
+      sb.Append(" VALUES")\par
+      sb.Append(" (:1,:2)")\par
+\par
+      Dim cmd As New OracleCommand\par
+      With cmd\par
+        .CommandText = sb.ToString\par
+        'define parameters\par
+        Dim p_empno As New OracleParameter(":1",_\par
+                             OracleDbType.Int16)\par
+        p_empno.Value = Me.txtEmpno.Text\par
+\b         Dim p_img As New OracleParameter(":2", _\par
+                             OracleDbType.Blob)\par
+        p_img.Size = contents.Length\par
+        p_img.Value = contents\par
+\b0         .Parameters.Add(p_empno)\par
+\b         .Parameters.Add(p_img)\par
+\b0         'proceed with execution\par
+        .Connection = cn\par
+        .Connection.Open()\par
+        .ExecuteNonQuery()\par
+        .Connection.Close()\par
+        .Dispose()\par
+      End With\par
+      MessageBox.Show("Succesfully added")\par
+    Catch ex As Exception\par
+      'display if any error occurs\par
+      MessageBox.Show("Error: " & ex.Message)\par
+      'close the connection if it is still open\par
+      If cn.State = ConnectionState.Open Then\par
+        cn.Close()\par
+      End If\par
+    End Try\par
+\pard\li360\sa120 End Sub\par
+\pard\keepn\s2\sb320\sa60\cf1\lang2057\b\f0\fs28 Retrieving Images from Oracle Database Using BLOB\par
+\pard\li360\sa50\cf0\lang1033\b0\f1\fs22 Private Sub btnShow_Click(ByVal sender As System.Object, \par
+  ByVal e As System.EventArgs) Handles btnShow.Click\par
+    'create connection to db\par
+    Dim cn As New OracleConnection("Data Source=xe; _\par
+                   User Id=scott;Password=tiger")\par
+    Try\par
+      'create command object \par
+      Dim sb As New System.Text.StringBuilder\par
+      sb.Append(" SELECT image FROM EmpImages")\par
+      sb.Append(" WHERE empno = " & Me.txtEmpno.Text)\par
+\par
+      Dim cmd As New OracleCommand(sb.ToString, cn)\par
+      With cmd\par
+        .Connection.Open()\par
+        Dim rdr As OracleDataReader = .ExecuteReader\par
+        If rdr.Read Then\par
+\b           Me.PictureBox1.Image = Image.FromStream\par
+               (New MemoryStream(rdr.GetOracleBlob\par
+                 (rdr.GetOrdinal("image")).Value))\par
+\b0         End If\par
+        .Connection.Close()\par
+        .Dispose()\par
+      End With\par
+    Catch ex As Exception\par
+      'display if any error occurs\par
+      MessageBox.Show("Error: " & ex.Message)\par
+      'close the connection if it is still open\par
+      If cn.State = ConnectionState.Open Then\par
+        cn.Close()\par
+      End If\par
+    End Try\par
+\pard\li360\sa120 End Sub\lang2057\par
+\pard\keepn\s2\sb320\sa60\cf1\b\f0\fs28 Uploading and Retrieving Documents from Oracle Database \par
+\pard\li360\sa50\cf0\b0\f2\fs22 Following is the code which uploads a Microsoft Word document into the Oracle database:\par
+\lang1033\f1\par
+Private Sub btnUpload_Click(ByVal sender As \par
+  System.Object, ByVal e As System.EventArgs) Handles \par
+  btnUpload.Click\par
+    If Me.txtDocFile.Text.Trim.Length = 0 Then\par
+      MessageBox.Show("No file chosen")\par
+      Exit Sub\par
+    End If\par
+\par
+    'Now, read the entire file into a string\par
+\b     Dim contents() As Byte = _\par
+           File.ReadAllBytes(Me.txtDocFile.Text)\par
+\b0\par
+    'create connection to db\par
+    Dim cn As New OracleConnection("Data Source=xe; _\par
+                       User Id=scott;Password=tiger")\par
+    Try\par
+      'create command object \par
+      Dim sb As New System.Text.StringBuilder\par
+      sb.Append(" INSERT INTO EmpDocs")\par
+      sb.Append(" (empno, doc)")\par
+      sb.Append(" VALUES")\par
+      sb.Append(" (:1,:2)")\par
+\par
+      Dim cmd As New OracleCommand\par
+      With cmd\par
+        .CommandText = sb.ToString\par
+        'define parameters\par
+        Dim p_empno As New OracleParameter(":1", _\par
+                               OracleDbType.Int16)\par
+        p_empno.Value = Me.txtEmpno.Text\par
+\b         Dim p_doc As New OracleParameter(":2", _\par
+                             OracleDbType.Blob)\par
+        p_doc.Size = contents.Length\par
+        p_doc.Value = contents\par
+\b0         .Parameters.Add(p_empno)\par
+\b         .Parameters.Add(p_doc)\par
+\b0         'proceed with execution\par
+        .Connection = cn\par
+        .Connection.Open()\par
+        .ExecuteNonQuery()\par
+        .Connection.Close()\par
+        .Dispose()\par
+      End With\par
+      MessageBox.Show("File Succesfully uploaded")\par
+    Catch ex As Exception\par
+      'display if any error occurs\par
+      MessageBox.Show("Error: " & ex.Message)\par
+      'close the connection if it is still open\par
+      If cn.State = ConnectionState.Open Then\par
+        cn.Close()\par
+      End If\par
+    End Try\par
+\pard\li360\sa120 End Sub\par
+\pard\sa120\lang2057\f2 Following is the code which retrieves the Word document or binary information stored in the Oracle database:\par
+\pard\li360\sa50\lang1033\f1 Private Sub btnDownload_Click(ByVal sender As \par
+  System.Object, ByVal e As System.EventArgs) Handles \par
+  btnDownload.Click\par
+    'create connection to db\par
+    Dim cn As New OracleConnection("Data Source=xe; _\par
+                       User Id=scott;Password=tiger")\par
+    Try\par
+      'create command object \par
+      Dim sb As New System.Text.StringBuilder\par
+      sb.Append(" SELECT doc FROM EmpDocs")\par
+      sb.Append(" WHERE empno = " & Me.txtEmpno.Text)\par
+\par
+      Dim cmd As New OracleCommand(sb.ToString, cn)\par
+      With cmd\par
+        .Connection.Open()\par
+        Dim rdr As OracleDataReader = .ExecuteReader\par
+\b         Dim buf() As Byte\par
+\b0         If rdr.Read Then\par
+\b           buf = \par
+          rdr.GetOracleBlob(rdr.GetOrdinal("doc")).Value\par
+          Dim DesktopPath As String = _\par
+                  Environment.GetFolderPath\par
+                  (Environment.SpecialFolder.Desktop)\par
+          File.WriteAllBytes(DesktopPath & "\\temp.doc", \par
+                                                 buf)\par
+\b0         End If\par
+        .Connection.Close()\par
+        .Dispose()\par
+        MessageBox.Show("File Succesfully downloaded \par
+                                          to desktop")\par
+      End With\par
+    Catch ex As Exception\par
+      'display if any error occurs\par
+      MessageBox.Show("Error: " & ex.Message)\par
+      'close the connection if it is still open\par
+      If cn.State = ConnectionState.Open Then\par
+        cn.Close()\par
+      End If\par
+    End Try\par
+\pard\li360\sa120 End Sub\par
+\pard\f3\fs20\par
+}
+ 

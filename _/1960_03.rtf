@@ -1,0 +1,566 @@
+{\rtf1\ansi\ansicpg1252\deff0\deflang1033{\fonttbl{\f0\fswiss\fprq2\fcharset0 Arial;}{\f1\fmodern\fprq1\fcharset0 Lucida Console;}}
+{\colortbl ;\red0\green0\blue0;\red51\green102\blue255;}
+{\stylesheet{ Normal;}{\s1 heading 1;}{\s2 heading 2;}{\s3 heading 3;}}
+{\*\generator Msftedit 5.41.15.1507;}\viewkind4\uc1\pard\keepn\s2\sb320\sa60\cf1\lang2057\b\f0\fs28 Retrieving Single Row of Information\par
+\pard\li360\sa50\cf0\lang1033\b0\f1\fs22 Imports Oracle.DataAccess.Client\par
+\par
+Public Class Form1\par
+\par
+  Private Sub btnGetEmployee_Click(ByVal sender As \par
+    System.Object, ByVal e As System.EventArgs) Handles \par
+    btnGetEmployee.Click\par
+    'create connection to db\par
+    Dim cn As New OracleConnection("Data Source=xe; _\par
+                           User Id=scott;Password=tiger")\par
+    Try\par
+      Dim SQL As String\par
+      'build the SELECT statement\par
+      SQL = String.Format("SELECT ename, sal, job FROM \par
+                 emp WHERE empno=\{0\}", Me.txtEmpno.Text)\par
+      'create command object to work with SELECT\par
+      Dim cmd As New OracleCommand(SQL, cn)\par
+      'open the connection\par
+      cmd.Connection.Open()\par
+      'get the DataReader object from command object\par
+      Dim rdr As OracleDataReader = _\par
+      cmd.ExecuteReader(CommandBehavior.CloseConnection)\par
+      'check if it has any rows\par
+      If rdr.HasRows Then\par
+        'read the first row\par
+        rdr.Read()\par
+        'extract the details\par
+        Me.txtEname.Text = rdr("ename")\par
+        Me.txtSal.Text = rdr("sal")\par
+        Me.txtJob.Text = rdr("job")\par
+      Else\par
+        'display message if no rows found\par
+        MessageBox.Show("Not found")\par
+      End If\par
+      'clear up the resources\par
+      rdr.Close()\par
+    Catch ex As Exception\par
+      'display if any error occurs\par
+      MessageBox.Show("Error: " & ex.Message)\par
+      'close the connection if it is still open\par
+      If cn.State = ConnectionState.Open Then\par
+        cn.Close()\par
+      End If\par
+    End Try\par
+  End Sub\par
+\par
+\pard\li360\sa120 End Class\par
+\pard\keepn\s2\sb320\sa60\cf1\lang2057\b\f0\fs28 Using "Using" for Simplicity\par
+\pard\li360\sa50\cf0\lang1033\b0\f1\fs22 Using cn As New OracleConnection("Data Source=xe;\par
+                      User Id=scott;Password=tiger")\par
+  Try\par
+    cn.Open()\par
+    Dim SQL As String\par
+    SQL = String.Format("SELECT ename, sal, \par
+     job FROM emp WHERE empno=\{0\}", Me.txtEmpno.Text)\par
+    Using cmd As New OracleCommand(SQL, cn)\par
+    Using rdr As OracleDataReader = cmd.ExecuteReader\par
+        If rdr.HasRows Then\par
+          'read the first row\par
+          rdr.Read()\par
+          'extract the details\par
+          Me.txtEname.Text = rdr("ename")\par
+          Me.txtSal.Text = rdr("sal")\par
+          Me.txtJob.Text = rdr("job")\par
+        Else\par
+          'display message if no rows found\par
+          MessageBox.Show("Not found")\par
+        End If\par
+      End Using\par
+    End Using\par
+  Catch ex As Exception\par
+    MessageBox.Show("Error: " & ex.Message)\par
+    If cn.State = ConnectionState.Open Then\par
+      cn.Close()\par
+    End If\par
+  End Try\par
+\pard\li360\sa120 End Using\par
+\pard\keepn\s2\sb320\sa60\cf1\lang2057\b\f0\fs28 Retrieving Multiple Rows on to Grid Using \par
+\pard\li360\sa50\cf0\lang1033\b0\f1\fs22 Imports Oracle.DataAccess.Client\par
+\par
+Public Class Form2\par
+  Private Sub btnGetEmployees_Click(ByVal sender As \par
+    System.Object, ByVal e As System.EventArgs) Handles \par
+    btnGetEmployees.Click\par
+    'create connection to db\par
+    Dim cn As New OracleConnection("Data Source=xe;\par
+                          User Id=scott;Password=tiger")\par
+    Try\par
+      Dim SQL As String\par
+      'build the SELECT statement\par
+\b       SQL = String.Format("SELECT empno, ename, job, \par
+            mgr, hiredate, sal, comm, deptno FROM emp")\par
+\b0       'create command object to work with SELECT\par
+      Dim cmd As New OracleCommand(SQL, cn)\par
+      'open the connection\par
+      cmd.Connection.Open()\par
+      'get the DataReader object from command object\par
+      Dim rdr As OracleDataReader = _\par
+      cmd.ExecuteReader(CommandBehavior.CloseConnection)\par
+      'check if it has any rows\par
+      If rdr.HasRows Then\par
+\b         With Me.DataGridView1\par
+          'remove existing rows from grid\par
+          .Rows.Clear()\par
+          'get the number of columns\par
+          Dim ColumnCount As Integer = rdr.FieldCount\par
+          'add columns to the grid\par
+          For i As Integer = 0 To ColumnCount - 1\par
+            .Columns.Add(rdr.GetName(i), rdr.GetName(i))\par
+          Next\par
+          .AutoSizeColumnsMode = \par
+           DataGridViewAutoSizeColumnsMode.ColumnHeader\par
+          'loop through every row\par
+          While rdr.Read\par
+            'get all row values into an array\par
+            Dim objCells(ColumnCount - 1) As Object\par
+            rdr.GetValues(objCells)\par
+            'add array as a row to grid\par
+            .Rows.Add(objCells)\par
+          End While\par
+        End With\par
+\b0       Else\par
+        'display message if no rows found\par
+        MessageBox.Show("Not found")\par
+        Me.DataGridView1.Rows.Clear()\par
+      End If\par
+      'clear up the resources\par
+      rdr.Close()\par
+    Catch ex As Exception\par
+      'display if any error occurs\par
+      MessageBox.Show("Error: " & ex.Message)\par
+      'close the connection if it is still open\par
+      If cn.State = ConnectionState.Open Then\par
+        cn.Close()\par
+      End If\par
+    End Try\par
+  End Sub\par
+\pard\li360\sa120 End Class\par
+\pard\keepn\s2\sb320\sa60\cf1\lang2057\b\f0\fs28 Pulling Information Using Table Name\par
+\pard\li360\sa50\cf0\lang1033\b0\f1\fs22 Imports Oracle.DataAccess.Client\par
+\par
+Public Class Form2\par
+  Private Sub btnGetEmployees_Click(ByVal sender As \par
+    System.Object, ByVal e As System.EventArgs) Handles \par
+    btnGetEmployees.Click\par
+    'create connection to db\par
+    Dim cn As New OracleConnection("Data Source=xe; _\par
+      User Id=scott;Password=tiger")\par
+    Try\par
+      Dim SQL As String\par
+      'build the SELECT statement\par
+      Dim cmd As New OracleCommand("emp", cn)\par
+      cmd.CommandType = CommandType.TableDirect     \par
+      cmd.Connection.Open()\par
+...\par
+  End Sub\par
+\pard\li360\sa120 End Class\par
+\pard\keepn\s2\sb320\sa60\cf1\lang2057\b\f0\fs28 Retrieving Multiple Rows into a DataTable Using OracleDataAdapter\par
+\pard\brdrl\brdrs\brdrw10 \li360\sa50\cf0\lang1033\b0\f1\fs22 Imports Oracle.DataAccess.Client\par
+Public Class Form4\par
+\par
+  Private Sub btnGetEmployees_Click(ByVal sender As \par
+  System.Object, ByVal e As System.EventArgs) Handles \par
+  btnGetEmployees.Click\par
+    'create connection to db\par
+    Dim cn As New OracleConnection("Data Source=xe; _\par
+                           User Id=scott;Password=tiger")\par
+    Try\par
+      Dim SQL As String\par
+      'build the SELECT statement\par
+      SQL = String.Format("SELECT empno, ename, job, \par
+      mgr, hiredate, sal, comm, deptno FROM emp")\par
+      'create the dataadapter object\par
+      Dim adp As New OracleDataAdapter(SQL, cn)\par
+      'create the offline datatable\par
+      Dim dt As New DataTable\par
+      'fill the data table with rows\par
+      adp.Fill(dt)\par
+      'clear up the resources and work offline\par
+      adp.Dispose()\par
+      'check if it has any rows\par
+      If dt.Rows.Count > 0 Then\par
+        'simply bind datatable to grid\par
+        Me.DataGridView1.DataSource = dt\par
+      Else\par
+        'display message if no rows found\par
+        MessageBox.Show("Not found")\par
+        Me.DataGridView1.Rows.Clear()\par
+      End If\par
+    Catch ex As Exception\par
+      'display if any error occurs\par
+      MessageBox.Show("Error: " & ex.Message)\par
+      'close the connection if it is still open\par
+      If cn.State = ConnectionState.Open Then\par
+        cn.Close()\par
+      End If\par
+    End Try\par
+  End Sub\par
+\pard\li360\sa120 End Class\par
+\pard\keepn\s2\sb320\sa60\cf1\lang2057\b\f0\fs28 Filling a DataTable Using OracleDataReader\par
+\pard\li360\sa50\cf0\lang1033\b0\f1\fs22 Dim cn As New OracleConnection("Data Source=xe; _\par
+                     User Id=scott;Password=tiger")\par
+    Try\par
+      Dim SQL As String\par
+      Dim dt As New DataTable\par
+      'build the SELECT statement\par
+      SQL = String.Format("SELECT empno, ename, job,\par
+           mgr, hiredate, sal, comm, deptno FROM emp")\par
+      'create command object to work with SELECT\par
+      Dim cmd As New OracleCommand(SQL, cn)\par
+      'open the connection\par
+      cmd.Connection.Open()\par
+      'get the DataReader object from command object\par
+      Dim rdr As OracleDataReader = _\par
+       cmd.ExecuteReader(CommandBehavior.CloseConnection)\par
+      'check if it has any rows\par
+      If rdr.HasRows Then\par
+        'simply bind datatable to grid\par
+\b         dt.Load(rdr, LoadOption.OverwriteChanges)\par
+\b0         Me.DataGridView1.DataSource = dt\par
+      Else\par
+        'display message if no rows found\par
+        MessageBox.Show("Not found")\par
+        Me.DataGridView1.Rows.Clear()\par
+      End If\par
+      rdr.Close()\par
+    Catch ex As Exception\par
+      'display if any error occurs\par
+      MessageBox.Show("Error: " & ex.Message)\par
+      'close the connection if it is still open\par
+      If cn.State = ConnectionState.Open Then\par
+        cn.Close()\par
+      End If\par
+\pard\li360\sa120     End Try\par
+\pard\keepn\s2\sb320\sa60\cf1\lang2057\b\f0\fs28 Retrieving Single Row of Information Using OracleDataAdapter\par
+\pard\li360\sa50\cf0\lang1033\b0\f1\fs22 Imports Oracle.DataAccess.Client\par
+\par
+Public Class Form3\par
+\par
+  Private Sub btnGetEmployee_Click(ByVal sender As \par
+  System.Object, ByVal e As System.EventArgs) Handles \par
+  btnGetEmployee.Click\par
+    'create connection to db\par
+    Dim cn As New OracleConnection("Data Source=xe; _\par
+                         User Id=scott;Password=tiger")\par
+    Try\par
+      Dim SQL As String\par
+      'build the SELECT statement\par
+      SQL = String.Format("SELECT ename, sal, job FROM \par
+                emp WHERE empno=\{0\}", Me.txtEmpno.Text)\par
+      'create the dataadapter object\par
+      Dim adp As New OracleDataAdapter(SQL, cn)\par
+      'create the offline datatable\par
+      Dim dt As New DataTable\par
+      'fill the data table with rows\par
+      adp.Fill(dt)\par
+      'clear up the resources and work offline\par
+      adp.Dispose()\par
+\par
+      'check if it has any rows\par
+      If dt.Rows.Count > 0 Then\par
+        'extract the details\par
+\b         Me.txtEname.Text = dt.Rows(0)("ename")\par
+        Me.txtSal.Text = dt.Rows(0)("sal")\par
+        Me.txtJob.Text = dt.Rows(0)("job")\par
+\b0       Else\par
+        'display message if no rows found\par
+        MessageBox.Show("Not found")\par
+      End If\par
+\par
+    Catch ex As Exception\par
+      'display if any error occurs\par
+      MessageBox.Show("Error: " & ex.Message)\par
+      'close the connection if it is still open\par
+      If cn.State = ConnectionState.Open Then\par
+        cn.Close()\par
+      End If\par
+    End Try\par
+  End Sub\par
+\pard\li360\sa120 End Class\par
+\pard\keepn\s2\sb320\sa60\cf1\lang2057\b\f0\fs28 Populating a Dataset with a Single Data Table\par
+\pard\li360\sa50\cf0\lang1033\b0\f1\fs22 Imports Oracle.DataAccess.Client\par
+Public Class Form6\par
+\par
+  Private Sub btnGetEmployees_Click(ByVal sender As \par
+  System.Object, ByVal e As System.EventArgs) Handles \par
+  btnGetEmployees.Click\par
+    'create connection to db\par
+    Dim cn As New OracleConnection("Data Source=xe; _\par
+                           User Id=scott;Password=tiger")\par
+    Try\par
+      Dim SQL As String\par
+      'build the SELECT statement\par
+      SQL = String.Format("SELECT empno, ename, job, \par
+              mgr, hiredate, sal, comm, deptno FROM emp")\par
+      'create the dataadapter object\par
+      Dim adp As New OracleDataAdapter(SQL, cn)\par
+      'create the offline datatable\par
+\b       Dim ds As New DataSet\par
+\b0       'fill the data set with a data table named emp\par
+\b       adp.Fill(ds, "emp")\par
+\b0       'clear up the resources and work offline\par
+      adp.Dispose()\par
+      'check if it has any rows\par
+\b       If ds.Tables("emp").Rows.Count > 0 Then\par
+\b0         'simply bind datatable to grid\par
+\b         Me.DataGridView1.DataSource = ds.Tables("emp")\par
+\b0       Else\par
+        'display message if no rows found\par
+        MessageBox.Show("Not found")\par
+        Me.DataGridView1.Rows.Clear()\par
+      End If\par
+    Catch ex As Exception\par
+      'display if any error occurs\par
+      MessageBox.Show("Error: " & ex.Message)\par
+      'close the connection if it is still open\par
+      If cn.State = ConnectionState.Open Then\par
+        cn.Close()\par
+      End If\par
+    End Try\par
+  End Sub\par
+\pard\li360\sa120 End Class\par
+\pard\keepn\s2\sb320\sa60\cf1\lang2057\b\f0\fs28 Populating a Dataset with Multiple Data Tables\par
+\pard\li360\sa50\cf0\lang1033\b0\f1\fs22 Imports Oracle.DataAccess.Client\par
+Public Class Form7\par
+\par
+  Private Sub btnData_Click(ByVal sender As \par
+  System.Object, ByVal e As System.EventArgs) Handles \par
+  btnData.Click\par
+    'create connection to db\par
+    Dim cn As New OracleConnection("Data Source=xe; _\par
+                          User Id=scott;Password=tiger")\par
+    Try\par
+      Dim ds As New DataSet\par
+      Dim adp As OracleDataAdapter\par
+\par
+\b       adp = New OracleDataAdapter("SELECT deptno, \par
+                            dname, loc FROM Dept", cn)\par
+      adp.Fill(ds, "Departments")\par
+      adp.Dispose()\par
+\par
+      adp = New OracleDataAdapter("SELECT empno, ename, \par
+             job, mgr, hiredate, sal, comm, deptno FROM \par
+             Emp", cn)\par
+      adp.Fill(ds, "Employees")\par
+      adp.Dispose()\par
+\par
+      Me.DataGridView1.DataSource = ds\par
+      Me.DataGridView1.DataMember = "Departments"\par
+\par
+      Me.DataGridView2.DataSource = \par
+                                 ds.Tables("Employees")\par
+\b0     Catch ex As Exception\par
+      'display if any error occurs\par
+      MessageBox.Show("Error: " & ex.Message)\par
+      'close the connection if it is still open\par
+      If cn.State = ConnectionState.Open Then\par
+        cn.Close()\par
+      End If\par
+    End Try\par
+  End Sub\par
+\pard\li360\sa120 End Class\par
+\pard\keepn\s2\sb320\sa60\cf1\lang2057\b\f0\fs28 Presenting Master-Detail Information Using Dataset\par
+\pard\li360\sa50\cf0\lang1033\b0\f1\fs22 Imports Oracle.DataAccess.Client\par
+Public Class Form8\par
+\par
+  Private Sub btnData_Click(ByVal sender As \par
+  System.Object, ByVal e As System.EventArgs) Handles \par
+  btnData.Click\par
+    'create connection to db\par
+    Dim cn As New OracleConnection("Data Source=xe; _\par
+                         User Id=scott;Password=tiger")\par
+    Try\par
+      Dim ds As New DataSet\par
+      Dim adp As OracleDataAdapter\par
+\par
+      adp = New OracleDataAdapter("SELECT deptno, \par
+                             dname, loc FROM Dept", cn)\par
+      adp.Fill(ds, "Departments")\par
+      adp.Dispose()\par
+\par
+      adp = New OracleDataAdapter("SELECT empno, ename, \par
+            job, mgr, hiredate, sal, comm, deptno FROM \par
+             Emp", cn)\par
+      adp.Fill(ds, "Employees")\par
+      adp.Dispose()\par
+\par
+\b       ds.Relations.Add(New DataRelation("FK_Emp_Dept", \par
+            ds.Tables("Departments").Columns("Deptno"), \par
+            ds.Tables("Employees").Columns("Deptno")))\par
+      Dim bsMaster As New BindingSource(ds, _\par
+                                        "Departments")\par
+      Dim bsChild As New BindingSource(bsMaster, _\par
+                                       "FK_Emp_Dept")\par
+      Me.DataGridView1.DataSource = bsMaster\par
+      Me.DataGridView2.DataSource = bsChild\par
+\b0\par
+    Catch ex As Exception\par
+      'display if any error occurs\par
+      MessageBox.Show("Error: " & ex.Message)\par
+      'close the connection if it is still open\par
+      If cn.State = ConnectionState.Open Then\par
+        cn.Close()\par
+      End If\par
+    End Try\par
+  End Sub\par
+\pard\li360\sa120 End Class\par
+\pard\keepn\s3\sb240\sa60\cf2\lang2057\b\f0\fs26 Retrieving Single Value from Database\par
+\pard\li360\sa50\cf0\lang1033\b0\f1\fs22 Imports Oracle.DataAccess.Client\par
+\par
+Public Class Form9\par
+  Private Sub btnEmployeeCount_Click(ByVal sender As \par
+  System.Object, ByVal e As System.EventArgs) Handles \par
+  btnEmployeeCount.Click\par
+    'create connection to db\par
+    Dim cn As New OracleConnection("Data Source=xe; _\par
+                         User Id=scott;Password=tiger")\par
+    Try\par
+      'create the command object\par
+      Dim cmd As New OracleCommand("SELECT COUNT(*) _\par
+                                        FROM emp", cn)\par
+      'open the connection from command\par
+      cmd.Connection.Open()\par
+      'execute the command and get the single value \par
+      'result\par
+\b       Dim result As String = cmd.ExecuteScalar\par
+\b0       'clear the resources\par
+      cmd.Connection.Close()\par
+      cmd.Dispose()\par
+      'display the output\par
+      MessageBox.Show("No. of Employees: " & result)\par
+    Catch ex As Exception\par
+      'display if any error occurs\par
+      MessageBox.Show("Error: " & ex.Message)\par
+      'close the connection if it is still open\par
+      If cn.State = ConnectionState.Open Then\par
+        cn.Close()\par
+      End If\par
+    End Try\par
+  End Sub\par
+\pard\li360\sa120 End Class\par
+\pard\keepn\s3\sb240\sa60\cf2\lang2057\b\f0\fs26 Handling Nulls when Executing with ExecuteScalar\par
+\pard\li360\sa50\cf0\lang1033\b0\f1\fs22 Imports Oracle.DataAccess.Client\par
+\par
+Public Class Form12\par
+\par
+  Private Sub btnGetCommission_Click(ByVal sender As \par
+  System.Object, ByVal e As System.EventArgs) Handles \par
+  btnGetCommission.Click\par
+    'create connection to db\par
+    Dim cn As New OracleConnection("Data Source=xe; _\par
+                         User Id=scott;Password=tiger")\par
+    Try\par
+      'create the command object\par
+      Dim cmd As New OracleCommand("SELECT comm FROM _\par
+              emp WHERE empno=" & Me.txtEmpno.Text, cn)\par
+      'open the connection from command\par
+      cmd.Connection.Open()\par
+      'execute the command and get the single value \par
+      'result\par
+\b       Dim result As Double = cmd.ExecuteScalar\par
+\b0       cmd.Connection.Close()\par
+      cmd.Dispose()\par
+      'display the output\par
+      MessageBox.Show("Commission: " & result)\par
+    Catch ex As Exception\par
+      'display if any error occurs\par
+      MessageBox.Show("Error: " & ex.Message)\par
+      'close the connection if it is still open\par
+      If cn.State = ConnectionState.Open Then\par
+        cn.Close()\par
+      End If\par
+    End Try\par
+\pard\li360\sa120   End Sub\par
+\pard\keepn\s3\sb240\sa60\cf2\lang2057\b\f0\fs26 Working with Bind Variables Together with OracleParameter\par
+\pard\li360\sa50\cf0\lang1033\b0\f1\fs22 Imports Oracle.DataAccess.Client\par
+\par
+Public Class Form11\par
+\par
+  Private Sub btnGetEmployee_Click(ByVal sender As \par
+  System.Object, ByVal e As System.EventArgs) Handles \par
+  btnGetEmployee.Click\par
+    'create connection to db\par
+    Dim cn As New OracleConnection("Data Source=xe; _\par
+                       User Id=scott;Password=tiger")\par
+    Try\par
+      'create command object to work with SELECT\par
+\par
+\b       Dim cmd As New OracleCommand("SELECT empno, _\par
+      ename, sal, job FROM emp WHERE empno=:empno", cn)\par
+      cmd.Parameters.Add(New OracleParameter(":empno", \par
+                                     Me.txtEmpno.Text))\par
+\b0\par
+      'open the connection\par
+      cmd.Connection.Open()\par
+      'get the DataReader object from command object\par
+      Dim rdr As OracleDataReader = _\par
+      cmd.ExecuteReader(CommandBehavior.CloseConnection)\par
+      'check if it has any rows\par
+      If rdr.HasRows Then\par
+        'read the first row\par
+        rdr.Read()\par
+        'extract the details\par
+        Me.txtEmpno.Text = rdr("empno")\par
+        Me.txtEname.Text = rdr("ename")\par
+        Me.txtSal.Text = rdr("sal")\par
+        Me.txtJob.Text = rdr("job")\par
+      Else\par
+        'display message if no rows found\par
+        MessageBox.Show("Not found")\par
+      End If\par
+      'clear up the resources\par
+      rdr.Close()\par
+    Catch ex As Exception\par
+      'display if any error occurs\par
+      MessageBox.Show("Error: " & ex.Message)\par
+      'close the connection if it is still open\par
+      If cn.State = ConnectionState.Open Then\par
+        cn.Close()\par
+      End If\par
+    End Try\par
+  End Sub\par
+\pard\li360\sa120 End Class\par
+\pard\keepn\s3\sb240\sa60\cf2\lang2057\b\f0\fs26 Working with OracleDataAdapter Together with OracleCommand\par
+\pard\li360\sa50\cf0\lang1033\b0\f1\fs22 Imports Oracle.DataAccess.Client\par
+\par
+Public Class Form10\par
+\par
+  Private Sub btnGetEmployees_Click_1(ByVal sender As \par
+  System.Object, ByVal e As System.EventArgs) Handles \par
+  btnGetEmployees.Click\par
+    'create connection to db\par
+    Dim cn As New OracleConnection("Data Source=xe; _\par
+                         User Id=scott;Password=tiger")\par
+    Try\par
+      'create command object to work with SELECT\par
+\b       Dim cmd As New OracleCommand("SELECT empno, _\par
+        ename, job, mgr, hiredate, sal, comm, deptno _\par
+        FROM emp", cn)\par
+\b0       'create DataAdapter from command\par
+\b       Dim adp As New OracleDataAdapter(cmd)\par
+\b0       'create the offline data table\par
+      Dim dt As New DataTable\par
+      'fill the data table with data and clear resources\par
+      adp.Fill(dt)\par
+      adp.Dispose()\par
+      'display the data\par
+      Me.DataGridView1.DataSource = dt\par
+    Catch ex As Exception\par
+      'display if any error occurs\par
+      MessageBox.Show("Error: " & ex.Message)\par
+      'close the connection if it is still open\par
+      If cn.State = ConnectionState.Open Then\par
+        cn.Close()\par
+      End If\par
+    End Try\par
+\par
+  End Sub\par
+\pard\li360\sa120 End Class\par
+\cf1\lang2057\b\f0\fs28\par
+}
+ 

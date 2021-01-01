@@ -1,0 +1,556 @@
+{\rtf1\ansi\ansicpg1252\deff0\deflang1033{\fonttbl{\f0\fswiss\fprq2\fcharset0 Arial;}{\f1\froman\fprq2\fcharset0 Times New Roman;}{\f2\fmodern\fprq1\fcharset0 Lucida Console;}{\f3\fswiss\fcharset0 Arial;}}
+{\colortbl ;\red0\green0\blue0;\red255\green0\blue0;}
+{\stylesheet{ Normal;}{\s1 heading 1;}{\s2 heading 2;}}
+{\*\generator Msftedit 5.41.15.1507;}\viewkind4\uc1\pard\keepn\s1\sb400\sa60\cf1\lang2057\kerning32\b\f0\fs32 A Fast Track on XML with Oracle\par
+\pard\sa120\cf0\kerning0\b0\f1\fs22 Code that automatically generates XML document based on the output of the internal \cf2\lang1033\f2\fs18 SELECT\cf0\lang2057\f1\fs22  statement:\par
+\pard\li360\sa50\f2 SELECT\par
+DBMS_XMLGEN.GETXML('SELECT empno, ename, sal, \par
+                              deptno FROM emp')\par
+\pard\li360\sa120 FROM DUAL;\par
+\pard\sa120\f1 Following is the \cf2\lang1033\f2\fs18 INSERT\cf0\f1\fs22  \lang2057 command which can add a row to the table created above:\par
+\pard\li360\sa50\f2 INSERT INTO Employee VALUES \par
+(\par
+'1001',\par
+'Jag',\par
+XMLType('\par
+        <Address>\par
+            <Street>13-20-26, Nallam vari thota</Street>\par
+            <City>Bhimavaram</City>\par
+            <Zip>534201</Zip>\par
+            <State>AP</State>\par
+        </Address>')\par
+\pard\li360\sa120        );\par
+\pard\sa120\f1 To retrieve the rows from the table along with XML data, we can use a \cf2\lang1033\f2\fs18 SELECT\cf0\f1\fs22  \lang2057 statement as follows:\par
+\pard\li360\sa50\f2 SELECT a.empno, a.ename, a.Address.getStringVal()\par
+\pard\li360\sa120 FROM   Employee a;\par
+\pard\sa120\f1 Sometimes, we may want to display the XML information in the form of logical columns not in the form of XML anymore. The following \cf2\lang1033\f2\fs18 SELECT\cf0\f1\fs22  \lang2057 statement tries to do the same:\par
+\pard\li360\sa50\f2 SELECT \par
+a.empno, \par
+a.ename, \par
+a.Address.extract('//Address/Street/text()')\par
+                            .getStringVal() as Street,\par
+a.Address.extract('//Address/City/text()')\par
+                            .getStringVal() as City,\par
+a.Address.extract('//Address/Zip/text()')\par
+                            .getStringVal() as Zip,\par
+a.Address.extract('//Address/State/text()')\par
+                            .getStringVal() as State\par
+\pard\li360\sa120 FROM   Employee a;\par
+\pard\sa120\f1 For a complete XML construct to an already existing row, we can use the following command:\par
+\pard\li360\sa50\f2 UPDATE Employee a\par
+SET a.Address = XMLType('\par
+        <Address>\par
+            <Street>13-20-26, Nallam vari thota</Street>\par
+            <City>Bhimavaram</City>\par
+            <Zip>534201</Zip>\par
+            <State>AP</State>\par
+        </Address>')\par
+\pard\li360\sa120 WHERE a.empno = '1001'\par
+\pard\keepn\s2\sb320\sa60\cf1\b\f0\fs28 Generate XML Using ADO.NET Dataset\par
+\pard\li360\sa50\cf0\lang1033\b0\f2\fs22 Private Sub btnShowDS_Click(ByVal sender As \par
+  System.Object, ByVal e As System.EventArgs) Handles \par
+  btnShowDS.Click\par
+    'create connection to db\par
+    Dim cn As New OracleConnection("Data Source=orcl; _\par
+                          User Id=scott;Password=tiger")\par
+    Try\par
+      'create command object \par
+      Dim cmd As New OracleCommand(Me.txtSQL.Text, cn)\par
+      'create adapter object\par
+      Dim da As New OracleDataAdapter(cmd)\par
+      'create dataset\par
+      Dim ds As New DataSet("Result")\par
+      'fill dataset\par
+      da.Fill(ds, "Rows")\par
+      'clear resources\par
+      da.Dispose()\par
+      cmd.Dispose()\par
+      'display the information\par
+\b       Me.txtXML.Text = ds.GetXml\par
+\b0     Catch ex As Exception\par
+      'display if any error occurs\par
+      MessageBox.Show("Error: " & ex.Message)\par
+      'close the connection if it is still open\par
+      If cn.State = ConnectionState.Open Then\par
+        cn.Close()\par
+      End If\par
+    End Try\par
+\pard\li360\sa120 End Sub\par
+\pard\keepn\s2\sb320\sa60\cf1\lang2057\b\f0\fs28 Generate XML Using ExecuteXMLReader\par
+\pard\li360\sa50\cf0\lang1033\b0\f2\fs22 Private Sub btnShowOraXML_Click(ByVal sender As \par
+  System.Object, ByVal e As System.EventArgs) Handles \par
+  btnShowOraXML.Click\par
+    'create connection to db\par
+    Dim cn As New OracleConnection("Data Source=orcl; _\par
+                         User Id=scott;Password=tiger")\par
+    Try\par
+      'create command object and set properties\par
+      Dim cmd As New OracleCommand(Me.txtSQL.Text, cn)\par
+\b       cmd.XmlCommandType = OracleXmlCommandType.Query\par
+      cmd.XmlQueryProperties.RootTag = "Result"\par
+      cmd.XmlQueryProperties.RowTag = "Rows"\par
+\b0       'open connection and execute the command\par
+      cmd.Connection.Open()\par
+\b       Dim dr As Xml.XmlReader = cmd.ExecuteXmlReader\par
+\b0       'load the XML into a document\par
+\b       \lang2070 Dim doc As New Xml.XmlDocument\par
+      \lang1033 doc.Load(dr)\par
+\b0       'release resources\par
+      cmd.Connection.Close()\par
+      cmd.Dispose()\par
+      'display the information\par
+\b       Me.txtXML.Text = doc.OuterXml\par
+\b0     Catch ex As Exception\par
+      'display if any error occurs\par
+      MessageBox.Show("Error: " & ex.Message)\par
+      'close the connection if it is still open\par
+      If cn.State = ConnectionState.Open Then\par
+        cn.Close()\par
+      End If\par
+    End Try\par
+\pard\li360\sa120 End Sub\par
+\pard\keepn\s2\sb320\sa60\cf1\lang2057\b\f0\fs28 Generate XML Using DBMS_XMLGEN\par
+\pard\li360\sa50\cf0\lang1033\b0\f2\fs22 Private Sub btnShowUsingXMLGEN_Click(ByVal sender As \par
+  System.Object, ByVal e As System.EventArgs) Handles \par
+  btnShowUsingXMLGEN.Click\par
+    Dim cn As New OracleConnection("Data Source=orcl; _\par
+                        User Id=scott;Password=tiger")\par
+    Try\par
+      'create command object \par
+      Dim sql As New System.Text.StringBuilder\par
+\b       sql.Append(" SELECT ")\par
+      sql.Append(" DBMS_XMLGEN.GETXML('" & \par
+                        Me.txtSQL.Text & "')")\par
+      sql.Append(" FROM dual")\par
+\b0       Dim cmd As New OracleCommand(sql.ToString, cn)\par
+      cmd.Connection.Open()\par
+      'display the information\par
+      Me.txtXML.Text = cmd.ExecuteScalar\par
+      'release resources\par
+      cmd.Connection.Close()\par
+      cmd.Dispose()\par
+    Catch ex As Exception\par
+      'display if any error occurs\par
+      MessageBox.Show("Error: " & ex.Message)\par
+      'close the connection if it is still open\par
+      If cn.State = ConnectionState.Open Then\par
+        cn.Close()\par
+      End If\par
+\pard\li360\sa120     End Try\par
+\pard\keepn\s2\sb320\sa60\cf1\lang2057\b\f0\fs28 Converting Rows to HTML Using XML and XSLT\par
+\pard\li360\sa50\cf0\lang1033\b0\f2\fs22 <?xml version="1.0" encoding="ISO-8859-1" ?>\par
+<xsl:stylesheet version="1.0" \par
+  xmlns:xsl="http://www.w3.org/1999/XSL/Transform">\par
+<xsl:template match="/">\par
+<html>\par
+  <body>\par
+    <table width="50%" cellspacing="0" cellpadding="0" \par
+     style="font-family:verdana;font-size:X-Small" \par
+     border="1">\par
+      <tr bgcolor="#336699">\par
+        <th align="left">\par
+          <font color="White">Name</font>\par
+        </th>\par
+        <th align="right">\par
+          <font color="White">Salary</font>\par
+        </th>\par
+      </tr>\par
+    <xsl:for-each select="EMPLOYEES/EMPLOYEE">\par
+      <tr>\par
+        <td align="left">\par
+          <xsl:value-of select="ENAME" />\par
+        </td>\par
+        <td align="right">\par
+          <xsl:value-of select="SAL" />\par
+        </td>\par
+      </tr>\par
+    </xsl:for-each>\par
+    </table>\par
+  </body>\par
+</html>\par
+</xsl:template>\par
+\pard\li360\sa120 </xsl:stylesheet>\par
+\pard\sa120\lang2057\f1 The following code applies transformation to the XML generated from \cf2\lang1033\f2\fs18 SELECT\cf0\lang2057\f1\fs22  statement. \par
+\pard\li360\sa50\lang1033\f2 Private Sub btnShow_Click(ByVal sender As System.Object, \par
+  ByVal e As System.EventArgs) Handles btnShow.Click\par
+    'create connection to db\par
+    Dim cn As New OracleConnection("Data Source=orcl; _\par
+                          User Id=scott;Password=tiger")\par
+    Try\par
+      'get XSLT content from XSL file\par
+\b       Dim XSL As String = _\par
+     System.IO.File.ReadAllText("..\\..\\ReportStyle.xsl")\par
+\b0       'create command object and set properties\par
+      Dim cmd As New OracleCommand("SELECT ename, _\par
+                                      sal FROM emp", cn)\par
+      With cmd\par
+        .XmlCommandType = OracleXmlCommandType.Query\par
+        .XmlQueryProperties.RootTag = "EMPLOYEES"\par
+        .XmlQueryProperties.RowTag = "EMPLOYEE"\par
+\b         .XmlQueryProperties.Xslt = XSL\par
+\b0       End With\par
+      'open connection and execute the command\par
+      cmd.Connection.Open()\par
+\b       Dim dr As Xml.XmlReader = cmd.ExecuteXmlReader\par
+      'load the XML into a document\par
+      \lang2070 Dim doc As New Xml.XmlDocument\par
+      \lang1033 doc.Load(dr)\par
+\b0       'release resources\par
+      cmd.Connection.Close()\par
+      cmd.Dispose()\par
+      'display the web report\par
+\b       Me.WebBrowser1.DocumentText = doc.OuterXml\par
+\b0     Catch ex As Exception\par
+      'display if any error occurs\par
+      MessageBox.Show("Error: " & ex.Message)\par
+      'close the connection if it is still open\par
+      If cn.State = ConnectionState.Open Then\par
+        cn.Close()\par
+      End If\par
+    End Try\par
+\pard\li360\sa120 End Sub\par
+\lang2057\par
+\pard\keepn\s2\sb320\sa60\cf1\b\f0\fs28 Inserting Rows into Oracle Using XML\par
+\pard\li360\sa50\cf0\lang1033\b0\f2\fs22 Private Sub btnAddRow_Click(ByVal sender As \par
+  System.Object, ByVal e As System.EventArgs) Handles \par
+  btnAddRow.Click\par
+    If Me.txtXML.Text.Trim.Length = 0 Then\par
+      MessageBox.Show("No XML generated")\par
+      Exit Sub\par
+    End If\par
+\par
+    'create connection to db\par
+    Dim cn As New OracleConnection("Data Source=orcl; _\par
+                        User Id=scott;Password=tiger")\par
+    Try\par
+      'create command object\par
+      Dim cmd As New OracleCommand()\par
+      With cmd\par
+        .Connection = cn\par
+        .Connection.Open()\par
+\b         .XmlCommandType = OracleXmlCommandType.Insert\par
+        .CommandText = Me.txtXML.Text\par
+        .XmlSaveProperties.RowTag = "EMPLOYEE"\par
+        .XmlSaveProperties.Table = "emp"\par
+        .XmlSaveProperties.UpdateColumnsList = New \par
+         String() \{"EMPNO", "ENAME", "SAL", "DEPTNO"\}\par
+        Dim result As Integer = .ExecuteNonQuery\par
+\b0         .Connection.Close()\par
+        .Dispose()\par
+        MessageBox.Show("Succesfully added " & result & " \par
+                                                   rows")\par
+      End With\par
+    Catch ex As Exception\par
+      'display if any error occurs\par
+      MessageBox.Show("Error: " & ex.Message)\par
+      'close the connection if it is still open\par
+      If cn.State = ConnectionState.Open Then\par
+        cn.Close()\par
+      End If\par
+    End Try\par
+\pard\li360\sa120 End Sub\par
+\pard\sa120\lang2057\f1 To frame XML manually (based on the user provided information), we are using a separate routine as follows:\par
+\pard\li360\sa50\lang1033\f2 Private Sub btnGenerateXML_Click(ByVal sender As \par
+  System.Object, ByVal e As System.EventArgs) Handles \par
+  btnGenerateXML.Click\par
+    Dim sb As New System.Text.StringBuilder\par
+    sb.Append("<?xml version = '1.0'?>" & \par
+                              ControlChars.NewLine)\par
+    sb.Append("<EMPLOYEES>" & ControlChars.NewLine)\par
+    sb.Append("<EMPLOYEE>" & ControlChars.NewLine)\par
+    sb.Append("<EMPNO>" & Me.txtEmpno.Text & "</EMPNO>" & \par
+                                    ControlChars.NewLine)\par
+    sb.Append("<ENAME>" & Me.txtName.Text & "</ENAME>" & \par
+                                    ControlChars.NewLine)\par
+    sb.Append("<SAL>" & Me.txtSal.Text & "</SAL>" & \par
+                                    ControlChars.NewLine)\par
+    sb.Append("<DEPTNO>" & Me.txtDeptno.Text & \par
+                      "</DEPTNO>" & ControlChars.NewLine)\par
+    sb.Append("</EMPLOYEE>" & ControlChars.NewLine)\par
+    sb.Append("</EMPLOYEES>" & ControlChars.NewLine)\par
+    Me.txtXML.Text = sb.ToString\par
+\pard\li360\sa120 End Sub\par
+\pard\keepn\s2\sb320\sa60\cf1\lang2057\b\f0\fs28 Updating Rows into Oracle Using XML\par
+\pard\li360\sa50\cf0\lang1033\b0\f2\fs22 Private Sub btnUpdateRow_Click(ByVal sender As \par
+  System.Object, ByVal e As System.EventArgs) Handles \par
+  btnUpdateRow.Click\par
+    If Me.txtXML.Text.Trim.Length = 0 Then\par
+      MessageBox.Show("No XML generated")\par
+      Exit Sub\par
+    End If\par
+\par
+    'create connection to db\par
+    Dim cn As New OracleConnection("Data Source=orcl; _\par
+                          User Id=scott;Password=tiger")\par
+    Try\par
+      'create command object\par
+      Dim cmd As New OracleCommand()\par
+      With cmd\par
+        .Connection = cn\par
+        .Connection.Open()\par
+\b         .XmlCommandType = OracleXmlCommandType.Update\par
+\b0         .CommandText = Me.txtXML.Text\par
+        .XmlSaveProperties.RowTag = "EMPLOYEE"\par
+        .XmlSaveProperties.Table = "emp"\par
+\b         .XmlSaveProperties.UpdateColumnsList = \par
+                New String() \{"ENAME", "SAL", "DEPTNO"\}\par
+        .XmlSaveProperties.KeyColumnsList = \par
+                New String() \{"EMPNO"\}\par
+\b0         Dim result As Integer = .ExecuteNonQuery\par
+        .Connection.Close()\par
+        .Dispose()\par
+        MessageBox.Show("Succesfully updated " & result \par
+                                              & " rows")\par
+      End With\par
+    Catch ex As Exception\par
+      'display if any error occurs\par
+      MessageBox.Show("Error: " & ex.Message)\par
+      'close the connection if it is still open\par
+      If cn.State = ConnectionState.Open Then\par
+        cn.Close()\par
+      End If\par
+    End Try\par
+\pard\li360\sa120 End Sub\par
+\pard\keepn\s1\sb400\sa60\cf1\lang2057\kerning32\b\f0\fs32 Working with Native XML in Oracle Database\par
+\pard\sa120\cf0\kerning0\b0\f1\fs22 A table is created with a column of type \cf2\lang1033\f2\fs18 XMLType\cf0\lang2057\f1\fs22  as follows:\par
+\pard\li360\sa50\lang1033\f2   CREATE TABLE Employee\par
+  (\par
+  empno VARCHAR2(4),\par
+  ename VARCHAR2(20),\par
+\b   address XMLType\par
+\b0   )\par
+\pard\li360\sa120   /\lang2057\par
+\pard\keepn\s2\sb320\sa60\cf1\b\f0\fs28 Inserting XML Data into XMLType Using Traditional INSERT\par
+\pard\li360\sa50\cf0\lang1033\b0\f2\fs22 Private Sub btnAdd_Click(ByVal sender As System.Object, \par
+  ByVal e As System.EventArgs) Handles btnAdd.Click\par
+    Dim SQL As New System.Text.StringBuilder\par
+\b     SQL.Append("INSERT INTO Employee VALUES ")\par
+    SQL.Append("(")\par
+    SQL.Append(" '1001', ")\par
+    SQL.Append(" 'Jag', ")\par
+    SQL.Append(" XMLType('")\par
+    SQL.Append("   <Address>")\par
+    SQL.Append("   <Street>13-20-26, Gunupudi, \par
+                            Nallamvari thota</Street>")\par
+    SQL.Append("   <City>Bhimavaram</City>")\par
+    SQL.Append("   <Zip>534201</Zip>")\par
+    SQL.Append("   <State>AP</State>")\par
+    SQL.Append("   </Address>')")\par
+    SQL.Append(")")\par
+\b0     'create connection to db\par
+    Dim cn As New OracleConnection("Data Source=xe; _\par
+                       User Id=scott;Password=tiger")\par
+    Try\par
+      'create command object\par
+      Dim cmd As New OracleCommand(SQL.ToString, cn)\par
+      cn.Open()\par
+      Dim result As Integer = cmd.ExecuteNonQuery\par
+      MessageBox.Show("Succesfully added " & result & \par
+                                              " rows")\par
+      cn.Close()\par
+      cmd.Dispose()\par
+    Catch ex As Exception\par
+      'display if any error occurs\par
+      MessageBox.Show("Error: " & ex.Message)\par
+      'close the connection if it is still open\par
+      If cn.State = ConnectionState.Open Then\par
+        cn.Close()\par
+      End If\par
+    End Try\par
+\pard\li360\sa120 End Sub\par
+\pard\keepn\s2\sb320\sa60\cf1\lang2057\b\f0\fs28 Updating XML Data in XMLType Using Traditional UPDATE\par
+\pard\li360\sa50\cf0\lang1033\b0\f2\fs22 Private Sub btnUpdate_Click(ByVal sender As \par
+  System.Object, ByVal e As System.EventArgs) Handles \par
+  btnUpdate.Click\par
+    Dim SQL As New System.Text.StringBuilder\par
+\b     SQL.Append("UPDATE Employee a ")\par
+    SQL.Append("SET a.Ename='Winner', ")\par
+    SQL.Append("a.Address = XMLType('")\par
+    SQL.Append(" <Address>")\par
+    SQL.Append(" <Street>13-20-26</Street>")\par
+    SQL.Append(" <City>Bvrm</City>")\par
+    SQL.Append(" <Zip>534201</Zip>")\par
+    SQL.Append(" <State>AP</State>")\par
+    SQL.Append(" </Address>') ")\par
+    SQL.Append("WHERE  a.empno = '1001'")\par
+\b0\par
+    'create connection to db\par
+    Dim cn As New OracleConnection("Data Source=xe; _\par
+                        User Id=scott;Password=tiger")\par
+    Try\par
+      'create command object\par
+      Dim cmd As New OracleCommand(SQL.ToString, cn)\par
+      cn.Open()\par
+      Dim result As Integer = cmd.ExecuteNonQuery\par
+      MessageBox.Show("Succesfully updated " & result & \par
+                                                " rows")\par
+      cn.Close()\par
+      cmd.Dispose()\par
+    Catch ex As Exception\par
+      'display if any error occurs\par
+      MessageBox.Show("Error: " & ex.Message)\par
+      'close the connection if it is still open\par
+      If cn.State = ConnectionState.Open Then\par
+        cn.Close()\par
+      End If\par
+    End Try\par
+\pard\li360\sa120 End Sub\par
+\pard\keepn\s2\sb320\sa60\cf1\lang2057\b\f0\fs28 Inserting XML Data Using OracleXmlType\par
+\pard\li360\sa50\cf0\lang1033\b0\f2\fs22 Private Sub btnAdd2_Click(ByVal sender As \par
+  System.Object, ByVal e As System.EventArgs) Handles \par
+  btnAdd2.Click\par
+    'create connection to db\par
+    Dim cn As New OracleConnection("Data Source=xe; _\par
+                       User Id=scott;Password=tiger")\par
+    Try\par
+      Dim SQL As New System.Text.StringBuilder\par
+      SQL.Append("INSERT INTO Employee VALUES ")\par
+      SQL.Append("(")\par
+      SQL.Append(" :empno, ")\par
+      SQL.Append(" :ename, ")\par
+      SQL.Append(" :address")\par
+      SQL.Append(")")\par
+\par
+      Dim XML As New System.Text.StringBuilder\par
+      XML.Append(" <Address>")\par
+      XML.Append(" <Street>10-37-2, \par
+                 Beside A.P. State warehouse, \par
+                 Indra Nagar</Street>")\par
+      XML.Append(" <City>Tenali</City>")\par
+      XML.Append(" <Zip>522202</Zip>")\par
+      XML.Append(" <State>AP</State>")\par
+      XML.Append(" </Address>")\par
+\par
+      'create command object\par
+      Dim cmd As New OracleCommand(SQL.ToString, cn)\par
+      cn.Open()\par
+      cmd.Parameters.Add(":empno", "1002")\par
+      cmd.Parameters.Add(":ename", "Sunitha")\par
+\b       Dim o_Address As New _\par
+        Oracle.DataAccess.Types.OracleXmlType(cn, \par
+        XML.ToString)\par
+      cmd.Parameters.Add(":address", o_Address)\par
+\b0       Dim result As Integer = cmd.ExecuteNonQuery\par
+      MessageBox.Show("Succesfully added " & result \par
+                                          & " rows")\par
+      cn.Close()\par
+      cmd.Dispose()\par
+    Catch ex As Exception\par
+      'display if any error occurs\par
+      MessageBox.Show("Error: " & ex.Message)\par
+      'close the connection if it is still open\par
+      If cn.State = ConnectionState.Open Then\par
+        cn.Close()\par
+      End If\par
+    End Try\par
+\pard\li360\sa120 End Sub\par
+\pard\keepn\s2\sb320\sa60\cf1\lang2057\b\f0\fs28 Retrieving and Updating XML Data Using OracleXmlType\par
+\pard\li360\sa50\cf0\lang1033\b0\f2\fs22 Private Sub btnUpdate2_Click(ByVal sender As \par
+  System.Object, ByVal e As System.EventArgs) Handles \par
+  btnUpdate2.Click\par
+    'create connection to db\par
+    Dim cn As New OracleConnection("Data Source=xe; _\par
+                        User Id=scott;Password=tiger")\par
+    Try\par
+\par
+      'retrieve the entire XML information to modify\par
+      Dim SQL As String\par
+      SQL = "SELECT * FROM employee "\par
+      SQL &= "WHERE empno=1001 "\par
+      Dim cmd As New OracleCommand(SQL, cn)\par
+      cmd.Connection.Open()\par
+      Dim dr As OracleDataReader = cmd.ExecuteReader\par
+      If Not dr.HasRows Then\par
+        MessageBox.Show("No rows found")\par
+        cmd.Connection.Close()\par
+        cmd.Dispose()\par
+        Exit Sub\par
+      End If\par
+      dr.Read()\par
+      Dim empno As String = dr("empno")\par
+      Dim ename As String = dr("ename")\par
+\b       Dim xtAddress As \par
+          Oracle.DataAccess.Types.OracleXmlType = \par
+          dr.GetOracleXmlType(dr.GetOrdinal("Address"))\par
+\b0       dr.Dispose()\par
+\par
+      'modify the city in XML and update to database\par
+\b       xtAddress.Update("//Address/City/text()", "", \par
+                                              "BVRM")\par
+\b0       SQL = "UPDATE Employee SET "\par
+      SQL &= " address = :address "\par
+      SQL &= " WHERE empno = :empno "\par
+      cmd = New OracleCommand(SQL, cn)\par
+\b       cmd.Parameters.Add(":address", xtAddress)\par
+\b0       cmd.Parameters.Add(":empno", "1001")\par
+      Dim result As Integer = cmd.ExecuteNonQuery\par
+      cmd.Connection.Close()\par
+      cmd.Dispose()\par
+\par
+      MessageBox.Show("Succesfully updated " & result & \par
+                                                " rows")\par
+    Catch ex As Exception\par
+      'display if any error occurs\par
+      MessageBox.Show("Error: " & ex.Message)\par
+      'close the connection if it is still open\par
+      If cn.State = ConnectionState.Open Then\par
+        cn.Close()\par
+      End If\par
+    End Try\par
+\pard\li360\sa120 End Sub\par
+\pard\keepn\s2\sb320\sa60\cf1\lang2057\b\f0\fs28 Extracting Individual Node Information of an XMLType Value\par
+\pard\li360\sa50\cf0\lang1033\b0\f2\fs22   Private Sub btnRead_Click(ByVal sender As \par
+  System.Object, ByVal e As System.EventArgs) Handles \par
+  btnRead.Click\par
+    'create connection to db\par
+    Dim cn As New OracleConnection("Data Source=xe; _\par
+                       User Id=scott;Password=tiger")\par
+    Try\par
+      Dim SQL As String\par
+      SQL = "SELECT * FROM employee "\par
+      SQL &= "WHERE empno=1001 "\par
+      Dim cmd As New OracleCommand(SQL, cn)\par
+      cmd.Connection.Open()\par
+      Dim dr As OracleDataReader = cmd.ExecuteReader\par
+      If Not dr.HasRows Then\par
+        MessageBox.Show("No rows found")\par
+        cmd.Connection.Close()\par
+        cmd.Dispose()\par
+        Exit Sub\par
+      End If\par
+      dr.Read()\par
+      Dim empno As String = dr("empno")\par
+      Dim ename As String = dr("ename")\par
+\b       Dim xtAddress As _\par
+        Oracle.DataAccess.Types.OracleXmlType = _\par
+        dr.GetOracleXmlType(dr.GetOrdinal("Address"))\par
+      Dim Street As String = _\par
+        xtAddress.Extract("//Address/Street/text()", \par
+                                            "").Value\par
+      Dim City As String = _\par
+        xtAddress.Extract("//Address/City/text()", \par
+                                            "").Value\par
+      Dim Zip As String = _\par
+        xtAddress.Extract("//Address/Zip/text()", \par
+                                            "").Value\par
+      Dim State As String = _\par
+        xtAddress.Extract("//Address/State/text()", \par
+                                            "").Value\par
+\b0       dr.Dispose()\par
+      cmd.Connection.Close()\par
+      cmd.Dispose()\par
+\b       MessageBox.Show(String.Format("\{0\},\{1\},\{2\},\par
+           \{3\},\{4\},\{5\}", empno, ename, Street, City, \par
+           Zip, State))\par
+\b0     Catch ex As Exception\par
+      'display if any error occurs\par
+      MessageBox.Show("Error: " & ex.Message)\par
+      'close the connection if it is still open\par
+      If cn.State = ConnectionState.Open Then\par
+        cn.Close()\par
+      End If\par
+    End Try\par
+\pard\li360\sa120 End Sub\lang2057\par
+\pard\lang1033\f3\fs20\par
+}
+ 

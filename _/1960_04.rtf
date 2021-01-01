@@ -1,0 +1,579 @@
+{\rtf1\ansi\ansicpg1252\deff0\deflang1033{\fonttbl{\f0\fswiss\fprq2\fcharset0 Arial;}{\f1\fmodern\fprq1\fcharset0 Lucida Console;}{\f2\fswiss\fcharset0 Arial;}}
+{\colortbl ;\red0\green0\blue0;}
+{\stylesheet{ Normal;}{\s1 heading 1;}{\s2 heading 2;}}
+{\*\generator Msftedit 5.41.15.1507;}\viewkind4\uc1\pard\keepn\s2\sb320\sa60\cf1\lang2057\b\f0\fs28 Using INSERT with OracleCommand\par
+\pard\li360\sa50\cf0\lang1033\b0\f1\fs22 Private Sub btnAdd_Click(ByVal sender As System.Object, \par
+  ByVal e As System.EventArgs) Handles btnAdd.Click\par
+    'create connection to db\par
+    Dim cn As New OracleConnection("Data Source=xe; _\par
+                      User Id=scott;Password=tiger")\par
+    Try\par
+      Dim SQL As String\par
+      'build the INSERT statement\par
+      Dim sb As New System.Text.StringBuilder\par
+      sb.Append(" INSERT INTO emp")\par
+      sb.Append(" (empno, ename, sal, deptno)")\par
+      sb.Append(" VALUES")\par
+      sb.Append(" (\{0\},'\{1\}',\{2\},\{3\})")\par
+      SQL = String.Format(sb.ToString, Me.txtEmpno.Text, \par
+        Me.txtEname.Text, Me.txtSal.Text, \par
+        Me.txtDeptno.Text)\par
+      'create command object \par
+      Dim cmd As New OracleCommand(SQL, cn)\par
+      'open the connection\par
+      cmd.Connection.Open()\par
+      'execute the command\par
+\b       Dim result As Integer = cmd.ExecuteNonQuery()\par
+\b0       'close the connection\par
+      cmd.Connection.Close()\par
+      'display the result\par
+      If result = 0 Then\par
+        MessageBox.Show("No rows inserted")\par
+      Else\par
+        MessageBox.Show("Succesfully inserted")\par
+      End If\par
+    Catch ex As Exception\par
+      'display if any error occurs\par
+      MessageBox.Show("Error: " & ex.Message)\par
+      'close the connection if it is still open\par
+      If cn.State = ConnectionState.Open Then\par
+        cn.Close()\par
+      End If\par
+    End Try\par
+\pard\li360\sa120   End Sub\par
+\pard\keepn\s2\sb320\sa60\cf1\lang2057\b\f0\fs28 Using UPDATE with OracleCommand\par
+\pard\li360\sa50\cf0\lang1033\b0\f1\fs22 Private Sub btnSave_Click(ByVal sender As System.Object, \par
+  ByVal e As System.EventArgs) Handles btnSave.Click\par
+    'create connection to db\par
+    Dim cn As New OracleConnection("Data Source=xe; _\par
+                         User Id=scott;Password=tiger")\par
+    Try\par
+      Dim SQL As String\par
+      'build the UPDATE statement\par
+      Dim sb As New System.Text.StringBuilder\par
+      sb.Append(" UPDATE emp SET")\par
+      sb.Append(" ename = '\{1\}'")\par
+      sb.Append(",sal = \{2\}")\par
+      sb.Append(",deptno = \{3\}")\par
+      sb.Append(" WHERE empno = \{0\}")\par
+      SQL = String.Format(sb.ToString, Me.txtEmpno.Text, \par
+       Me.txtEname.Text, Me.txtSal.Text, \par
+       Me.txtDeptno.Text)\par
+      'create command object \par
+      Dim cmd As New OracleCommand(SQL, cn)\par
+      'open the connection\par
+      cmd.Connection.Open()\par
+      'execute the command\par
+      Dim result As Integer = cmd.ExecuteNonQuery()\par
+      'close the connection\par
+      cmd.Connection.Close()\par
+      'display the result\par
+      If result = 0 Then\par
+        MessageBox.Show("No rows updated")\par
+      Else\par
+        MessageBox.Show("Succesfully updated")\par
+      End If\par
+    Catch ex As Exception\par
+      'display if any error occurs\par
+      MessageBox.Show("Error: " & ex.Message)\par
+      'close the connection if it is still open\par
+      If cn.State = ConnectionState.Open Then\par
+        cn.Close()\par
+      End If\par
+    End Try\par
+\pard\li360\sa120   End Sub\par
+\pard\keepn\s2\sb320\sa60\cf1\lang2057\b\f0\fs28 Using DELETE with OracleCommand\par
+\pard\li360\sa50\cf0\lang1033\b0\f1\fs22 Private Sub btnDelete_Click(ByVal sender As \par
+  System.Object, ByVal e As System.EventArgs) Handles \par
+  btnDelete.Click\par
+    'create connection to db\par
+    Dim cn As New OracleConnection("Data Source=xe; _\par
+                        User Id=scott;Password=tiger")\par
+    Try\par
+      Dim SQL As String\par
+      'build the DELETE statement\par
+      Dim sb As New System.Text.StringBuilder\par
+\b       sb.Append(" DELETE FROM emp")\par
+      sb.Append(" WHERE empno = \{0\}")\par
+\b0       SQL = String.Format(sb.ToString, Me.txtEmpno.Text)\par
+      'create command object \par
+      Dim cmd As New OracleCommand(SQL, cn)\par
+      'open the connection\par
+      cmd.Connection.Open()\par
+      'execute the command\par
+      Dim result As Integer = cmd.ExecuteNonQuery()\par
+      'close the connection\par
+      cmd.Connection.Close()\par
+      'display the result\par
+      If result = 0 Then\par
+        MessageBox.Show("No rows deleted")\par
+      Else\par
+        MessageBox.Show("Succesfully deleted")\par
+      End If\par
+    Catch ex As Exception\par
+      'display if any error occurs\par
+      MessageBox.Show("Error: " & ex.Message)\par
+      'close the connection if it is still open\par
+      If cn.State = ConnectionState.Open Then\par
+        cn.Close()\par
+      End If\par
+    End Try\par
+\pard\li360\sa120   End Sub\par
+\pard\keepn\s2\sb320\sa60\cf1\lang2057\b\f0\fs28 Multiple Inserts Using Statement Caching\par
+\pard\li360\sa50\cf0\lang1033\b0\f1\fs22 Private Sub btnMultipleInserts_Click(ByVal sender As \par
+  System.Object, ByVal e As System.EventArgs) Handles \par
+  btnMultipleInserts.Click\par
+    'create connection to db\par
+    Dim cn As New OracleConnection("Data Source=xe; _\par
+                       User Id=scott;Password=tiger")\par
+    Try\par
+      Dim SQL As String\par
+      'build the INSERT statement\par
+      Dim sb As New System.Text.StringBuilder\par
+      sb.Append(" INSERT INTO emp")\par
+      sb.Append(" (empno, ename, sal, deptno)")\par
+      sb.Append(" VALUES")\par
+\b       sb.Append(" (:empno, :ename, :sal, :deptno)")\par
+\b0       SQL = sb.ToString\par
+      'create command object \par
+      Dim cmd As New OracleCommand(SQL, cn)\par
+      'open the connection\par
+      cmd.Connection.Open()\par
+      For i As Integer = 1 To 8\par
+        cmd.Parameters.Clear()\par
+\b         cmd.Parameters.Add(New OracleParameter(":empno", \par
+                                              i + 1000))\par
+        cmd.Parameters.Add(New OracleParameter(":ename", \par
+                                          "dummy " & i))\par
+        cmd.Parameters.Add(New OracleParameter(":sal", \par
+                                             i * 1000))\par
+        cmd.Parameters.Add(New \par
+                         OracleParameter(":deptno", 20))\par
+\b0         cmd.ExecuteNonQuery()\par
+      Next\par
+      'close the connection\par
+      cmd.Connection.Close()\par
+      'display the result\par
+      MessageBox.Show("Succesfully inserted")\par
+    Catch ex As Exception\par
+      'display if any error occurs\par
+      MessageBox.Show("Error: " & ex.Message)\par
+      'close the connection if it is still open\par
+      If cn.State = ConnectionState.Open Then\par
+        cn.Close()\par
+      End If\par
+    End Try\par
+\pard\li360\sa120   End Sub\par
+\pard\keepn\s2\sb320\sa60\cf1\lang2057\b\f0\fs28 Multiple Inserts Using Array Binding\par
+\pard\li360\sa50\cf0\lang1033\b0\f1\fs22 Private Sub btnArrayBind_Click(ByVal sender As \par
+  System.Object, ByVal e As System.EventArgs) Handles \par
+  btnArrayBind.Click\par
+    'create connection to db\par
+    Dim cn As New OracleConnection("Data Source=xe; _\par
+                         User Id=scott;Password=tiger")\par
+    Try\par
+      Dim SQL As String\par
+      'build the INSERT statement\par
+      Dim sb As New System.Text.StringBuilder\par
+      sb.Append(" INSERT INTO emp")\par
+      sb.Append(" (empno, ename, sal, deptno)")\par
+      sb.Append(" VALUES")\par
+      sb.Append(" (:empno, :ename, :sal, :deptno)")\par
+      SQL = sb.ToString\par
+      'create array structures to hold 8 rows\par
+      \lang2070 Dim ar_empno(7) As Integer\par
+      Dim ar_ename(7) As String\par
+      Dim ar_sal(7) As Integer\par
+      Dim ar_deptno(7) As Integer\par
+      \lang1033 'fill the array structures with rows\par
+      For i As Integer = 0 To 7\par
+        \lang2070 ar_empno(i) = i + 1000\par
+        ar_ename(i) = "dummy " & i\par
+        ar_sal(i) = i * 1000\par
+        ar_deptno(i) = 20\par
+      \lang1033 Next\par
+      'define parameters\par
+      Dim p_empno As New OracleParameter\par
+      p_empno.OracleDbType = OracleDbType.Int16\par
+      p_empno.Value = ar_empno\par
+      Dim p_ename As New OracleParameter\par
+      p_ename.OracleDbType = OracleDbType.Varchar2\par
+      p_ename.Value = ar_ename\par
+      Dim p_sal As New OracleParameter\par
+      p_sal.OracleDbType = OracleDbType.Double\par
+      p_sal.Value = ar_sal\par
+      Dim p_deptno As New OracleParameter\par
+      p_deptno.OracleDbType = OracleDbType.Int16\par
+      p_deptno.Value = ar_deptno\par
+      'create command object \par
+      Dim cmd As New OracleCommand(SQL, cn)\par
+      cmd.ArrayBindCount = 8 \par
+      'rows to insert through binding\par
+      'add parameters to command\par
+      cmd.Parameters.Add(p_empno)\par
+      cmd.Parameters.Add(p_ename)\par
+      cmd.Parameters.Add(p_sal)\par
+      cmd.Parameters.Add(p_deptno)\par
+      'open the connection\par
+      cmd.Connection.Open()\par
+      Dim result As Integer = cmd.ExecuteNonQuery()\par
+      'close the connection\par
+      cmd.Connection.Close()\par
+      'display the result\par
+      MessageBox.Show("Succesfully inserted " &\par
+                                  result & " rows")\par
+    Catch ex As Exception\par
+      'display if any error occurs\par
+      MessageBox.Show("Error: " & ex.Message)\par
+      'close the connection if it is still open\par
+      If cn.State = ConnectionState.Open Then\par
+        cn.Close()\par
+      End If\par
+    End Try\par
+\pard\li360\sa120   End Sub\par
+\pard\keepn\s2\sb320\sa60\cf1\lang2057\b\f0\fs28 Creating an Oracle Table Dynamically Using ODP.NET\par
+\pard\li360\sa50\cf0\lang1033\b0\f1\fs22 Private Sub btnCreateTable_Click(ByVal sender As \par
+  System.Object, ByVal e As System.EventArgs) Handles \par
+  btnCreateTable.Click\par
+    'create connection to db\par
+    Dim cn As New OracleConnection("Data Source=xe; _\par
+                        User Id=scott;Password=tiger")\par
+    Try\par
+      Dim SQL As String\par
+      'build the CREATE TABLE statement\par
+      Dim sb As New System.Text.StringBuilder\par
+\b       sb.Append(" CREATE TABLE MyEmp")\par
+      sb.Append(" (")\par
+      sb.Append("   empno NUMBER(4),")\par
+      sb.Append("   ename VARCHAR2(20)")\par
+      sb.Append(" )")\par
+\b0       SQL = sb.ToString\par
+      'create command object \par
+      Dim cmd As New OracleCommand(SQL, cn)\par
+      'open the connection\par
+      cmd.Connection.Open()\par
+      'execute the DDL command\par
+      cmd.ExecuteNonQuery()\par
+      'close the connection\par
+      cmd.Connection.Close()\par
+      'display the result\par
+      MessageBox.Show("Succesfully created")\par
+    Catch ex As Exception\par
+      'display if any error occurs\par
+      MessageBox.Show("Error: " & ex.Message)\par
+      'close the connection if it is still open\par
+      If cn.State = ConnectionState.Open Then\par
+        cn.Close()\par
+      End If\par
+    End Try\par
+\pard\li360\sa120 End Sub\par
+\pard\keepn\s1\sb400\sa60\cf1\lang2057\kerning32\b\f0\fs32 Updating Offline Data to Database Using OracleDataAdapter \par
+\pard\li360\sa50\cf0\lang1033\kerning0\b0\f1\fs22 Private Sub btnDatasetUpdate_Click(ByVal sender As \par
+  System.Object, ByVal e As System.EventArgs) Handles \par
+  btnDatasetUpdate.Click\par
+    'create connection to db\par
+    Dim cn As New OracleConnection("Data Source=xe; _\par
+                        User Id=scott;Password=tiger")\par
+    Try\par
+\par
+      'build the INSERT statement\par
+      Dim sb As New System.Text.StringBuilder\par
+      sb.Append(" INSERT INTO emp")\par
+      sb.Append(" (empno, ename, sal, deptno)")\par
+      sb.Append(" VALUES")\par
+      sb.Append(" (:empno, :ename, :sal, :deptno)")\par
+      Dim sqlInsert As String = sb.ToString\par
+\par
+      'build the SELECT statement\par
+      sb = New System.Text.StringBuilder\par
+      sb.Append(" SELECT")\par
+      sb.Append(" empno, ename, sal, deptno")\par
+      sb.Append(" FROM emp")\par
+      Dim sqlSelect As String = sb.ToString\par
+\par
+      'create command objects\par
+      Dim cmdSelect As New OracleCommand(sqlSelect, cn)\par
+      Dim cmdInsert As New OracleCommand(sqlInsert, cn)\par
+      'attach parameters to insert command object\par
+      With cmdInsert.Parameters\par
+        .Add(New OracleParameter(":empno", \par
+                       OracleDbType.Int16, 4, "empno"))\par
+        .Add(New OracleParameter(":ename", \par
+                   OracleDbType.Varchar2, 12, "ename"))\par
+        .Add(New OracleParameter(":sal", \par
+                      OracleDbType.Decimal, 0, "sal"))\par
+        .Add(New OraceParameter(":deptno", \par
+                      OracleDbType.Int16, 4, "deptno"))\par
+      End With\par
+      \par
+      'create data adapter\par
+      Dim da As New OracleDataAdapter\par
+      'assign command objects to data adapter\par
+      da.SelectCommand = cmdSelect\par
+      da.InsertCommand = cmdInsert\par
+      'create and fill the datatable\par
+      Dim dt As New DataTable\par
+      da.Fill(dt)\par
+      'modify data in datatable by adding \par
+      'a new offline row\par
+      \lang2070 Dim dr As DataRow = dt.NewRow\par
+      \lang1033 dr("empno") = 1001\par
+      dr("ename") = "Jagadish"\par
+      dr("sal") = 1300\par
+      dr("deptno") = 20\par
+      dt.Rows.Add(dr)\par
+      'update the offline row back to database\par
+      da.Update(dt)\par
+      'clear resources\par
+      da.Dispose()\par
+      'display the result\par
+      MessageBox.Show("Updated succesfully")\par
+    Catch ex As Exception\par
+      'display if any error occurs\par
+      MessageBox.Show("Error: " & ex.Message)\par
+      'close the connection if it is still open\par
+      If cn.State = ConnectionState.Open Then\par
+        cn.Close()\par
+      End If\par
+    End Try\par
+\pard\li360\sa120 End Sub\par
+\pard\keepn\s1\sb400\sa60\cf1\lang2057\kerning32\b\f0\fs32 Working with OracleCommandBuilder and OracleDataAdapter \par
+\pard\li360\sa50\cf0\lang1033\kerning0\b0\f1\fs22 Private Sub btnUpdDSusingCB_Click(ByVal sender As \par
+  System.Object, ByVal e As System.EventArgs) Handles \par
+  btnUpdDSusingCB.Click\par
+    'create connection to db\par
+    Dim cn As New OracleConnection("Data Source=xe; _\par
+                        User Id=scott;Password=tiger")\par
+    Try\par
+\par
+      'build the SELECT statement\par
+      Dim sb As New System.Text.StringBuilder\par
+      sb.Append(" SELECT")\par
+      sb.Append(" empno, ename, sal, deptno")\par
+      sb.Append(" FROM emp")\par
+      Dim sqlSelect As String = sb.ToString\par
+\par
+      'create command objects\par
+      Dim cmdSelect As New OracleCommand(sqlSelect, cn)\par
+\par
+      \lang2070 'create data adapter\par
+      Dim da As New OracleDataAdapter\par
+      \lang1033 'assign command objects to data adapter\par
+      da.SelectCommand = cmdSelect\par
+\b       Dim CommBuilder As New OracleCommandBuilder(da)\par
+\b0       'create and fill the datatable\par
+      Dim dt As New DataTable\par
+      da.Fill(dt)\par
+      'modify data in datatable by adding \par
+      'a new offline row\par
+      \lang2070 Dim dr As DataRow = dt.NewRow\par
+      \lang1033 dr("empno") = 2001\par
+      dr("ename") = "Sunitha"\par
+      dr("sal") = 1300\par
+      dr("deptno") = 20\par
+      dt.Rows.Add(dr)\par
+      'update the offline row back to database\par
+      da.Update(dt)\par
+      'clear resources\par
+      da.Dispose()\par
+      'display the result\par
+      MessageBox.Show("Updated succesfully")\par
+    Catch ex As Exception\par
+      'display if any error occurs\par
+      MessageBox.Show("Error: " & ex.Message)\par
+      'close the connection if it is still open\par
+      If cn.State = ConnectionState.Open Then\par
+        cn.Close()\par
+      End If\par
+    End Try\par
+\pard\li360\sa120   End Sub\par
+\pard\keepn\s1\sb400\sa60\cf1\lang2057\kerning32\b\f0\fs32 Working with Transactions Using ODP.NET \par
+\pard\li360\sa50\cf0\lang1033\kerning0\b0\f1\fs22 Private Sub btnGenTransaction_Click(ByVal sender As \par
+  System.Object, ByVal e As System.EventArgs) Handles \par
+  btnGenTransaction.Click\par
+    'create connection to db\par
+    Dim cn As New OracleConnection("Data Source=xe; _\par
+                        User Id=scott;Password=tiger")\par
+    'create transaction object\par
+\b     Dim trans As OracleTransaction = Nothing\par
+\b0     Try\par
+      Dim sqlInsertSales As String\par
+      Dim sb As New System.Text.StringBuilder\par
+      sb.Append(" INSERT INTO sales")\par
+      sb.Append(" (orderno, customername, itemid, qty)")\par
+      sb.Append(" VALUES")\par
+      sb.Append(" (\{0\},'\{1\}',\{2\},\{3\})")\par
+      sqlInsertSales = String.Format(sb.ToString, \par
+                              202, "Winner", 1002, 3)\par
+\par
+      Dim sqlUpdateStock As String\par
+      sb = New System.Text.StringBuilder\par
+      sb.Append(" UPDATE stock SET")\par
+      sb.Append(" qty = qty - \{1\}")\par
+      sb.Append(" WHERE")\par
+      sb.Append(" itemid = \{0\}")\par
+      sqlUpdateStock = String.Format(sb.ToString, \par
+                                          1002, 3)\par
+\par
+      'open the connection\par
+      cn.Open()\par
+      'begin the transaction\par
+\b       trans = cn.BeginTransaction\par
+\b0       'create command objects \par
+      Dim cmdInsertSales As New _\par
+                   OracleCommand(sqlInsertSales, cn)\par
+      Dim cmdUpdateStock As New _\par
+                   OracleCommand(sqlUpdateStock, cn)\par
+      'execute the commands\par
+      cmdInsertSales.ExecuteNonQuery()\par
+      cmdUpdateStock.ExecuteNonQuery()\par
+      'commit the transaction\par
+\b       trans.Commit()\par
+\b0       'close the connection\par
+      cn.Close()\par
+      'display the result\par
+      MessageBox.Show("Transaction Succesful")\par
+    Catch ex As Exception\par
+\b       If Not trans Is Nothing Then\par
+        'rollback the transaction\par
+        trans.Rollback()\par
+      End If\par
+\b0\par
+      'display if any error occurs\par
+      MessageBox.Show("Error: " & ex.Message)\par
+      'close the connection if it is still open\par
+      If cn.State = ConnectionState.Open Then\par
+        cn.Close()\par
+      End If\par
+    End Try\par
+\pard\li360\sa120   End Sub\par
+\pard\keepn\s2\sb320\sa60\cf1\lang2057\b\f0\fs28 Displaying a Single or First Error\par
+\pard\li360\sa50\cf0\lang1033\b0\f1\fs22 Private Sub btnSingleError_Click(ByVal sender As \par
+  System.Object, ByVal e As System.EventArgs) Handles \par
+  btnSingleError.Click\par
+    'create connection to db\par
+    Dim cn As New OracleConnection("Data Source=xe; _\par
+                         User Id=scott;Password=tiger")\par
+    Try\par
+      Dim SQL As String\par
+      'build the INSERT statement\par
+      Dim sb As New System.Text.StringBuilder\par
+      sb.Append(" INSERT INTO emp2")\par
+      sb.Append(" (empno, ename, sal, deptno)")\par
+      sb.Append(" VALUES")\par
+      sb.Append(" (\{0\},'\{1\}',\{2\},\{3\})")\par
+      SQL = String.Format(sb.ToString, 1001, \par
+                           "Jagadish", 1300, 20)\par
+      'create command object \par
+      Dim cmd As New OracleCommand(SQL, cn)\par
+      'open the connection\par
+      cmd.Connection.Open()\par
+      'execute the command\par
+      Dim result As Integer = cmd.ExecuteNonQuery()\par
+      'close the connection\par
+      cmd.Connection.Close()\par
+      'display the result\par
+      If result = 0 Then\par
+        MessageBox.Show("No rows inserted")\par
+      Else\par
+        MessageBox.Show("Succesfully inserted")\par
+      End If\par
+\b     Catch ex As OracleException\par
+      'display if any error occurs\par
+      Dim sb As New System.Text.StringBuilder\par
+      sb.Append("Error occurred at:" & \par
+                               ControlChars.NewLine)\par
+      sb.Append("-------------------------------\par
+                 ---------" & ControlChars.NewLine)\par
+      sb.Append("Source: " & ex.Source & \par
+                              ControlChars.NewLine)\par
+      sb.Append("Data Source: " & ex.DataSource & \par
+                             ControlChars.NewLine)\par
+      sb.Append("Error Number: " & ex.Number & \par
+                             ControlChars.NewLine)\par
+      sb.Append("Procedure: " & ex.Procedure & \par
+                            ControlChars.NewLine)\par
+      sb.Append("Message: " & ex.Message)\par
+      MessageBox.Show(sb.ToString)\par
+\b0       'close the connection if it is still open\par
+      If cn.State = ConnectionState.Open Then\par
+        cn.Close()\par
+      End If\par
+    End Try\par
+\pard\li360\sa120 End Sub\par
+\pard\keepn\s2\sb320\sa60\cf1\lang2057\b\f0\fs28 Displaying Multiple Errors\par
+\pard\li360\sa50\cf0\lang1033\b0\f1\fs22 Private Sub btnMultipleErrors_Click(ByVal sender As \par
+  System.Object, ByVal e As System.EventArgs) Handles \par
+  btnMultipleErrors.Click\par
+    'create connection to db\par
+    Dim cn As New OracleConnection("Data Source=xe; _\par
+      User Id=scott;Password=tiger")\par
+    Try\par
+      Dim SQL As String\par
+      'build the INSERT statement\par
+      Dim sb As New System.Text.StringBuilder\par
+      sb.Append(" INSERT INTO emp")\par
+      sb.Append(" (empno, ename, sal, deptno)")\par
+      sb.Append(" VALUES")\par
+      sb.Append(" (:empno, :ename, :sal, :deptno)")\par
+      SQL = sb.ToString\par
+      'create array structures to hold 8 rows\par
+      \lang2070 Dim ar_empno(7) As Integer\par
+      Dim ar_ename(7) As String\par
+      Dim ar_sal(7) As Integer\par
+      Dim ar_deptno(7) As Integer\par
+      \lang1033 'fill the array structures with rows\par
+      For i As Integer = 0 To 7\par
+        ar_empno(i) = i + 1000\par
+        ar_ename(i) = "too many number of chars here " \par
+                                                  \lang1040 & i\par
+        \lang2070 ar_sal(i) = i * 1000\par
+        ar_deptno(i) = 20\par
+      \lang1033 Next\par
+      'define parameters\par
+      Dim p_empno As New OracleParameter\par
+      p_empno.OracleDbType = OracleDbType.Int16\par
+      p_empno.Value = ar_empno\par
+      Dim p_ename As New OracleParameter\par
+      p_ename.OracleDbType = OracleDbType.Varchar2\par
+      p_ename.Value = ar_ename\par
+      Dim p_sal As New OracleParameter\par
+      p_sal.OracleDbType = OracleDbType.Double\par
+      p_sal.Value = ar_sal\par
+      Dim p_deptno As New OracleParameter\par
+      p_deptno.OracleDbType = OracleDbType.Int16\par
+      p_deptno.Value = ar_deptno\par
+      'create command object \par
+      Dim cmd As New OracleCommand(SQL, cn)\par
+      cmd.ArrayBindCount = 8 'rows to insert \par
+        through binding\par
+      'add parameters to command\par
+      cmd.Parameters.Add(p_empno)\par
+      cmd.Parameters.Add(p_ename)\par
+      cmd.Parameters.Add(p_sal)\par
+      cmd.Parameters.Add(p_deptno)\par
+      'open the connection\par
+      cmd.Connection.Open()\par
+      Dim result As Integer = cmd.ExecuteNonQuery()\par
+      'close the connection\par
+      cmd.Connection.Close()\par
+      'display the result\par
+      MessageBox.Show("Succesfully inserted " \par
+        & result & " rows")\par
+    Catch ex As OracleException\par
+      'display if any error occurs\par
+\b       Dim sb As New System.Text.StringBuilder\par
+      For Each er As OracleError In ex.Errors\par
+        sb.Append("-->" & er.Message & \par
+          ControlChars.NewLine)\par
+      Next\par
+\b0       MessageBox.Show(sb.ToString)\par
+      'close the connection if it is still open\par
+      If cn.State = ConnectionState.Open Then\par
+        cn.Close()\par
+      End If\par
+    End Try\par
+\pard\li360\sa120   End Sub\par
+\pard\f2\fs20\par
+}
+ 

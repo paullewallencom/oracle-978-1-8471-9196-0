@@ -1,0 +1,708 @@
+{\rtf1\ansi\ansicpg1252\deff0\deflang1033{\fonttbl{\f0\fswiss\fprq2\fcharset0 Arial;}{\f1\fmodern\fprq1\fcharset0 Lucida Console;}{\f2\froman\fprq2\fcharset0 Times New Roman;}{\f3\fswiss\fcharset0 Arial;}}
+{\colortbl ;\red0\green0\blue0;\red51\green102\blue255;\red0\green128\blue0;}
+{\stylesheet{ Normal;}{\s1 heading 1;}{\s2 heading 2;}{\s3 heading 3;}}
+{\*\generator Msftedit 5.41.15.1507;}\viewkind4\uc1\pard\keepn\s2\sb320\sa60\cf1\lang2057\b\f0\fs28 Catching Notifications\par
+\pard\li360\sa50\cf0\lang1033\b0\f1\fs22 Imports Oracle.DataAccess.Client\par
+\par
+Public Class Form1\par
+\par
+  Private cn As OracleConnection\par
+  Private cmd As OracleCommand\par
+\par
+  Private Sub btnStart_Click(ByVal sender As \par
+  System.Object, ByVal e As System.EventArgs) Handles \par
+  btnStart.Click\par
+    'create connection to db\par
+    cn = New OracleConnection("Data Source=xe; _\par
+                   User Id=scott;Password=tiger")\par
+    Try\par
+      'create command object \par
+      cmd = New OracleCommand\par
+      With cmd\par
+        'provide the sql to monitor\par
+        .CommandText = "SELECT empno, ename FROM emp \par
+                                   WHERE empno=7369"\par
+        .Connection = cn\par
+        .Connection.Open()\par
+        'add the dependency & monitoring\par
+\b         Dim dp As New OracleDependency(cmd)\par
+        AddHandler dp.OnChange, AddressOf OnNotification\par
+\b0         Me.txtNotifications.Text = "Started listening..." \par
+                                  & ControlChars.NewLine\par
+        .ExecuteNonQuery()\par
+      End With\par
+    Catch ex As Exception\par
+      'display if any error occurs\par
+      MessageBox.Show("Error: " & ex.Message)\par
+      'close the connection if it is still open\par
+      If cn.State = ConnectionState.Open Then\par
+        cn.Close()\par
+      End If\par
+    End Try\par
+  End Sub\par
+\par
+\b   Private Sub OnNotification(ByVal src As System.Object, \par
+             ByVal args As OracleNotificationEventArgs)\par
+    Dim ResName As String = _\par
+                   args.Details.Rows(0)("ResourceName")\par
+    Me.txtNotifications.Text &= ResName & \par
+                                  ControlChars.NewLine\par
+    Me.DataGridView1.DataSource = args.Details\par
+  End Sub\par
+\b0\par
+  Private Sub btnStop_Click(ByVal sender As \par
+  System.Object, ByVal e As System.EventArgs) Handles \par
+  btnStop.Click\par
+    Try\par
+      cmd.Connection.Close()\par
+      cmd.Dispose()\par
+    Catch ex As Exception\par
+      If cn.State = ConnectionState.Open Then\par
+        cn.Close()\par
+      End If\par
+    End Try\par
+    Me.txtNotifications.Text &= "Stopped Listening..." \par
+                               & ControlChars.NewLine\par
+  End Sub\par
+\par
+  Private Sub Form1_Load(ByVal sender As System.Object, \par
+  ByVal e As System.EventArgs) Handles MyBase.Load\par
+\b     Control.CheckForIllegalCrossThreadCalls = False\par
+\b0   End Sub\par
+\par
+\pard\li360\sa120 End Class\par
+\pard\keepn\s3\sb240\sa60\cf2\lang2057\b\f0\fs26 Catching Multiple Notifications\par
+\pard\li360\sa50\cf0\lang1033\b0\f1\fs22   Private Sub btnStart_Click(ByVal sender As \par
+  System.Object, ByVal e As System.EventArgs) Handles \par
+  btnStart.Click\par
+    'create connection to db\par
+    cn = New OracleConnection("Data Source=xe; _\par
+                   User Id=scott;Password=tiger")\par
+    Try\par
+      'create command object \par
+      cmd = New OracleCommand\par
+      With cmd\par
+        'provide the sql to monitor\par
+        .CommandText = "SELECT empno, ename FROM \par
+                             emp WHERE empno=7369"\par
+        .Connection = cn\par
+        .Connection.Open()\par
+        'add the dependency & monitoring\par
+        Dim dp As New OracleDependency(cmd)\par
+        AddHandler dp.OnChange, AddressOf OnNotification\par
+        Me.txtNotifications.Text = "Started listening..." \par
+                                   & ControlChars.NewLine\par
+\b         .Notification.IsNotifiedOnce = False\par
+\b0         .ExecuteNonQuery()\par
+      End With\par
+    Catch ex As Exception\par
+      'display if any error occurs\par
+      MessageBox.Show("Error: " & ex.Message)\par
+      'close the connection if it is still open\par
+      If cn.State = ConnectionState.Open Then\par
+        cn.Close()\par
+      End If\par
+    End Try\par
+\pard\li360\sa120   End Sub\par
+\pard\keepn\s2\sb320\sa60\cf1\lang2057\b\f0\fs28 Identifying Rows Modified During Notifications\par
+\pard\li360\sa50\cf0\lang1033\b0\f1\fs22 Imports Oracle.DataAccess.Client\par
+\par
+Public Class Form3\par
+\par
+  Private cn As OracleConnection\par
+  Private cmd As OracleCommand\par
+\par
+  Private Sub btnStart_Click(ByVal sender As \par
+  System.Object, ByVal e As System.EventArgs) Handles \par
+  btnStart.Click\par
+    'create connection to db\par
+    cn = New OracleConnection("Data Source=xe; _\par
+                       User Id=scott;Password=tiger")\par
+    Try\par
+      'create command object \par
+      cmd = New OracleCommand\par
+      With cmd\par
+        'provide the sql to monitor\par
+\b         .CommandText = "SELECT empno, ename FROM emp "\par
+        .AddRowid = True\par
+\b0         .Connection = cn\par
+        .Connection.Open()\par
+        'add the dependency & monitoring\par
+        Dim dp As New OracleDependency(cmd)\par
+        AddHandler dp.OnChange, AddressOf OnNotification\par
+        Me.txtNotifications.Text = "Started listening..." \par
+                                  & ControlChars.NewLine\par
+\b         .Notification.IsNotifiedOnce = False\par
+\b0         .ExecuteNonQuery()\par
+      End With\par
+    Catch ex As Exception\par
+      'display if any error occurs\par
+      MessageBox.Show("Error: " & ex.Message)\par
+      'close the connection if it is still open\par
+      If cn.State = ConnectionState.Open Then\par
+        cn.Close()\par
+      End If\par
+    End Try\par
+  End Sub\par
+\par
+  Private Sub OnNotification(ByVal src As System.Object, \par
+  ByVal args As OracleNotificationEventArgs)\par
+    Dim ResName As String = _\par
+                   args.Details.Rows(0)("ResourceName")\par
+\b     Dim RowID As String = args.Details.Rows(0)("RowID")\par
+    Dim sql As String = "SELECT ename FROM emp WHERE \par
+                               ROWID='" & RowID & "'"\par
+    Dim cmd As OracleCommand = cn.CreateCommand\par
+    cmd.CommandText = sql\par
+    Dim rdr As OracleDataReader = cmd.ExecuteReader\par
+    Dim ename As String = String.Empty\par
+    If rdr.Read Then EName = rdr(0)\par
+    Me.txtNotifications.Text &= ResName & ", Employee:" \par
+                         & EName & ControlChars.NewLine\par
+\b0     Me.DataGridView1.DataSource = args.Details\par
+  End Sub\par
+\par
+  Private Sub btnStop_Click(ByVal sender As \par
+  System.Object, ByVal e As System.EventArgs) Handles \par
+  btnStop.Click\par
+    Try\par
+      cmd.Connection.Close()\par
+      cmd.Dispose()\par
+    Catch ex As Exception\par
+      If cn.State = ConnectionState.Open Then\par
+        cn.Close()\par
+      End If\par
+    End Try\par
+    Me.txtNotifications.Text &= "Stopped Listening..." & \par
+                                    ControlChars.NewLine\par
+  End Sub\par
+\par
+  Private Sub Form1_Load(ByVal sender As System.Object, \par
+  ByVal e As System.EventArgs) Handles MyBase.Load\par
+     Control.CheckForIllegalCrossThreadCalls = False\par
+  End Sub\par
+\par
+\pard\li360\sa120 End Class\par
+\pard\keepn\s2\sb320\sa60\cf1\lang2057\b\f0\fs28 The Devil of Applications: "Not Responding" \par
+\pard\sa120\cf0\b0\f2\fs22 Let us now try to develop an application which tries to execute a stored procedure given below:\par
+\pard\li360\sa50\lang1033\f1   CREATE OR REPLACE PROCEDURE p_Longtask AS\par
+  i NUMBER;\par
+  BEGIN\par
+    FOR i IN 1..10000\par
+  LOOP\par
+    UPDATE emp SET sal = sal;\par
+    COMMIT;\par
+  END LOOP;\par
+  END;\par
+\pard\li360\sa120   /\par
+\pard\sa120\lang2057\f2 Following is the code, which tries to execute the above stored procedure:\par
+\pard\li360\sa50\lang1033\f1   Private Sub btnExecute_Click(ByVal sender As \par
+  System.Object, ByVal e As System.EventArgs) Handles \par
+  btnExecute.Click\par
+    'create connection to db\par
+    Me.lblMsg.Text = "creating connection object..."\par
+    Dim cn As New OracleConnection("Data Source=xe; _\par
+                       User Id=scott;Password=tiger")\par
+    Try\par
+      Me.lblMsg.Text = "creating command object..."\par
+      'create command object \par
+      Dim cmd As New OracleCommand\par
+      With cmd\par
+        'provide the sql to monitor\par
+        .CommandText = "p_longtask"\par
+        .CommandType = CommandType.StoredProcedure\par
+        .Connection = cn\par
+        Me.lblMsg.Text = "Opening connection to \par
+                                      database.."\par
+        .Connection.Open()\par
+        Me.lblMsg.Text = "executing the \par
+                             stored procedure..."\par
+        .ExecuteNonQuery()\par
+      End With\par
+      Me.lblMsg.Text = ""\par
+      MessageBox.Show("Succesfully executed")\par
+    Catch ex As Exception\par
+      'display if any error occurs\par
+      MessageBox.Show("Error: " & ex.Message)\par
+      'close the connection if it is still open\par
+      If cn.State = ConnectionState.Open Then\par
+        cn.Close()\par
+      End If\par
+    End Try\par
+\pard\li360\sa120   End Sub\par
+\pard\keepn\s2\sb320\sa60\cf1\lang2057\b\f0\fs28 Asynchronous Touch with Multi-Threading\par
+\pard\li360\sa50\cf0\lang1033\b0\f1\fs22 Imports Oracle.DataAccess.Client\par
+Imports System.Threading\par
+\par
+Public Class Async02\par
+\par
+  Private Sub btnExecute_Click(ByVal sender As \par
+  System.Object, ByVal e As System.EventArgs) Handles \par
+  btnExecute.Click\par
+\b     StartExecuteTaskAsync()\par
+\b0   End Sub\par
+\par
+#Region "Asynchronous handling"\par
+\par
+\b   Dim thExecuteTaskAsync As Thread = Nothing\par
+  Private Sub StartExecuteTaskAsync()\par
+    'clear existing thread\par
+    If Not thExecuteTaskAsync Is Nothing Then\par
+      thExecuteTaskAsync.Abort()\par
+      thExecuteTaskAsync.Join()\par
+      thExecuteTaskAsync = Nothing\par
+    End If\par
+    'start a new thread to execute the \par
+    'task asynchronously\par
+    thExecuteTaskAsync = \par
+         New Thread(AddressOf ExecuteTaskAsync)\par
+    thExecuteTaskAsync.Start()\par
+  End Sub\par
+\b0\par
+\b   Private Sub ExecuteTaskAsync()\par
+\b0     'create connection to db\par
+    'access delegate to show status on GUI\par
+\b     Invoke(ShowStatus, New Object() \{"creating \par
+                        connection object..."\})\par
+\b0     Dim cn As New OracleConnection("Data Source=xe; _\par
+                      User Id=scott;Password=tiger")\par
+    Try\par
+      'access delegate to show status on GUI\par
+\b       Invoke(ShowStatus, New Object() \{"creating \par
+                          command object..."\})\par
+\b0\par
+      'create command object \par
+      Dim cmd As New OracleCommand\par
+      With cmd\par
+        'provide the sql to monitor\par
+        .CommandText = "p_longtask"\par
+        .CommandType = CommandType.StoredProcedure\par
+        .Connection = cn\par
+        'access delegate to show status on GUI\par
+\b         Invoke(ShowStatus, New Object() \{"Opening \par
+                       connection to database.."\})\par
+\b0         .Connection.Open()\par
+        'access delegate to show status on GUI\par
+\b         Invoke(ShowStatus, New Object() \{"executing the \par
+                       stored procedure..."\})\par
+\b0         .ExecuteNonQuery()\par
+      End With\par
+      'access delegate to show status on GUI\par
+\b       Invoke(ShowStatus, New Object() \{"Done!"\})\par
+\b0     Catch ex As Exception\par
+      'display if any error occurs\par
+      MessageBox.Show("Error: " & ex.Message)\par
+      'close the connection if it is still open\par
+      If cn.State = ConnectionState.Open Then\par
+        cn.Close()\par
+      End If\par
+    End Try\par
+\par
+  End Sub\par
+\par
+  '===================================================\par
+   ==========  ''DELEGATE declaration \par
+  ''(generally used when the task needs to \par
+                                  communicate with GUI)\par
+  '''''''''''''''''''''''''''''''''''''''''''''''''''''''''\par
+\b   Private Delegate Sub delShowStatus(ByVal msg As \par
+                                           String)\par
+  Dim ShowStatus As New delShowStatus(AddressOf ShowMsg)\par
+  Private Sub ShowMsg(ByVal msg As String)\par
+    Me.lblMsg.Text = msg\par
+  End Sub\par
+\b0   '===============================================\par
+  ============== \par
+  Private Sub Form1_FormClosing(ByVal sender As Object, \par
+  ByVal e As System.Windows.Forms.FormClosingEventArgs) \par
+  Handles Me.FormClosing\par
+    'this is necessary if the form is trying to close, \par
+    'even before the completion of task\par
+\b     If Not thExecuteTaskAsync Is Nothing Then \par
+                         thExecuteTaskAsync.Abort()\par
+\b0   End Sub\par
+\par
+#End Region\par
+\pard\li360\sa120 End Class\lang2057\par
+\pard\keepn\s2\sb320\sa60\cf1\b\f0\fs28 Developing a Simple Oracle Database Helper Class\par
+\pard\li360\sa50\cf0\lang1033\b0\f1\fs22 Imports Microsoft.VisualBasic\par
+Imports Oracle.DataAccess.Client\par
+Imports System.Data\par
+\par
+Public Class OraDBHelper\par
+  Public Shared Sub SQLExecute(ByVal strSQL As String)\par
+\par
+    Dim cmd As OracleCommand = Nothing\par
+    Try\par
+      cmd = New OracleCommand(strSQL, \par
+      New OracleConnection(ConnectionString))\par
+      cmd.Connection.Open()\par
+      cmd.ExecuteNonQuery()\par
+      cmd.Connection.Close()\par
+      cmd.Dispose()\par
+    Catch ex As Exception\par
+      If Not cmd Is Nothing Then\par
+        If cmd.Connection.State = ConnectionState.Open \par
+          Then\par
+          cmd.Connection.Close()\par
+        End If\par
+      End If\par
+      Throw New Exception(ex.Message)\par
+    End Try\par
+  End Sub\par
+\par
+  Public Shared Function getResultSet(ByVal strSQL As \par
+                                    String) As DataSet\par
+    Try\par
+      Dim ds As New DataSet\par
+      Dim da As New OracleDataAdapter(strSQL, \par
+           New OracleConnection(ConnectionString))\par
+      da.Fill(ds)\par
+      da.Dispose()\par
+      Return ds\par
+    Catch ex As Exception\par
+      Throw New Exception(ex.Message)\par
+    End Try\par
+  End Function\par
+\par
+  Private Shared ReadOnly Property ConnectionString() As \par
+                                                  String\par
+    Get\par
+      Return ConfigurationManager.ConnectionStrings\par
+                 ("OraConnStr").ConnectionString.ToString\par
+    End Get\par
+  End Property\par
+\pard\li360\sa120 End Class\par
+\pard\keepn\s2\sb320\sa60\cf1\lang2057\b\f0\fs28 Developing a Simple Business Logic Class\par
+\pard\li360\sa50\cf0\lang1033\b0\f1\fs22 Imports Microsoft.VisualBasic\par
+\par
+Public Class Emp\par
+\par
+  Private _empno As Integer\par
+  Private _ename As String\par
+  Private _sal As Double\par
+  Private _deptno As Integer\par
+\par
+#Region "Properties"\par
+\par
+  Public Property Empno() As Integer\par
+    Get\par
+      Return _empno\par
+    End Get\par
+    Set(ByVal value As Integer)\par
+      _empno = value\par
+    End Set\par
+  End Property\par
+\par
+  Public Property Ename() As String\par
+    Get\par
+      Return _ename\par
+    End Get\par
+    Set(ByVal value As String)\par
+      _ename = value\par
+    End Set\par
+  End Property\par
+\par
+  Public Property Sal() As Double\par
+    Get\par
+      Return _sal\par
+    End Get\par
+    Set(ByVal value As Double)\par
+      _sal = value\par
+    End Set\par
+  End Property\par
+\par
+  Public Property Deptno() As Integer\par
+    Get\par
+      Return _deptno\par
+    End Get\par
+    Set(ByVal value As Integer)\par
+      _deptno = value\par
+    End Set\par
+  End Property\par
+\par
+#End Region\par
+\par
+#Region "Operations"\par
+\par
+  Public Function Insert(ByVal Emp As Emp) As String\par
+    Dim sql As String\par
+    sql = "INSERT INTO emp (empno,ename,sal,deptno) "\par
+    sql &= "VALUES "\par
+    sql &= "(" & Emp.Empno & ",'" & Emp.Ename & "'," \par
+                     & Emp.Sal & "," & Emp.Deptno & ")"\par
+    Try\par
+      OraDBHelper.SQLExecute(sql)\par
+      Return Nothing\par
+    Catch ex As Exception\par
+      Return ex.Message\par
+    End Try\par
+  End Function\par
+\par
+  Public Function Update(ByVal Emp As Emp) As String\par
+    Dim sql As String\par
+    sql = "UPDATE emp SET "\par
+    sql &= " ename='" & Emp.Ename & "', sal=" & Emp.Sal \par
+                               & ", deptno=" & Emp.Deptno\par
+    sql &= " WHERE empno=" & Emp.Empno\par
+    Try\par
+      OraDBHelper.SQLExecute(sql)\par
+      Return Nothing\par
+    Catch ex As Exception\par
+      Return ex.Message\par
+    End Try\par
+  End Function\par
+\par
+  Public Function Delete(ByVal Emp As Emp) As String\par
+    Dim sql As String\par
+    sql = "DELETE FROM emp "\par
+    sql &= " WHERE empno=" & Emp.Empno\par
+    Try\par
+      OraDBHelper.SQLExecute(sql)\par
+      Return Nothing\par
+    Catch ex As Exception\par
+      Return ex.Message\par
+    End Try\par
+  End Function\par
+\par
+  Public Function GetEmpList() As System.Data.DataSet\par
+    Dim sql As String\par
+    sql = "SELECT empno,ename,sal,deptno FROM emp"\par
+    Return OraDBHelper.getResultSet(sql)\par
+  End Function\par
+\par
+#End Region\par
+\par
+\pard\li360\sa120 End Class\par
+\pard\keepn\s2\sb320\sa60\cf1\lang2057\b\f0\fs28 Creating the .NET XML Web Service\par
+\pard\cf0\lang1033\b0\f3\fs20 Modified code:\par
+\par
+\pard\li720\sa50\f1\fs22 Imports Oracle.DataAccess.Client\par
+Imports Oracle.DataAccess.Types\par
+Imports System.Xml\par
+Imports System.Data\par
+\par
+Public Class OraDbLib\par
+\par
+  Dim _ConnStr As String\par
+  Dim _DBConnError As String = ""\par
+\par
+  Public Sub New()\par
+    _ConnStr = ConfigurationManager.\par
+                 ConnectionStrings("OraConnStr").\par
+                   ConnectionString.ToString\par
+  End Sub\par
+\par
+  Public ReadOnly Property \par
+           ConnectionErrorDescription() As String\par
+    Get\par
+      Return _DBConnError\par
+    End Get\par
+  End Property\par
+\par
+  Public Sub SQLExecute(ByVal sqlDML As String)\par
+    Dim cn As New OracleConnection(_ConnStr)\par
+    Try\par
+      Dim SQL As String = sqlDML\par
+      Dim cmd As New OracleCommand(SQL, cn)\par
+      cmd.Connection.Open()\par
+      cmd.ExecuteNonQuery()\par
+      cmd.Connection.Close()\par
+      cmd.Dispose()\par
+    Catch ex As Exception\par
+      Throw New Exception("Command cannot be executed. \par
+           Received Error '" & ex.Message & "' \par
+           when trying to execute the statement '" \par
+           & sqlDML & "'")\par
+    Finally\par
+      If cn.State = ConnectionState.Open Then\par
+        cn.Close()\par
+      End If\par
+    End Try\par
+  End Sub\par
+\par
+  Public Function getResultset(ByVal sqlSELECT As \par
+                             String) As DataTable\par
+    Dim cn As New OracleConnection(_ConnStr)\par
+    Try\par
+      Dim SQL As String = sqlSELECT\par
+      Dim da As New OracleDataAdapter(SQL, cn)\par
+      Dim dt As New DataTable\par
+      da.Fill(dt)\par
+      da.Dispose()\par
+      Return dt\par
+    Catch ex As Exception\par
+      Throw New Exception("Command cannot be executed. \par
+        Received Error '" & ex.Message & "' when \par
+        trying to execute the statement '" \par
+        & sqlSELECT & "'")\par
+    Finally\par
+      If cn.State = ConnectionState.Open Then\par
+        cn.Close()\par
+      End If\par
+    End Try\par
+  End Function\par
+\par
+  Public Function getRowValue(ByVal sqlSELECT As \par
+                                String) As Object\par
+    Dim cn As New OracleConnection(_ConnStr)\par
+    Try\par
+      Dim SQL As String = sqlSELECT\par
+      Dim cmd As New OracleCommand(sqlSELECT, cn)\par
+      cmd.Connection.Open()\par
+      Dim value As Object = cmd.ExecuteScalar\par
+      cmd.Connection.Close()\par
+      cmd.Dispose()\par
+      Return value\par
+    Catch ex As Exception\par
+      Throw New Exception("Command cannot be executed. \par
+      Received Error '" & ex.Message & "' when trying \par
+      to execute the statement '" & sqlSELECT & "'")\par
+    Finally\par
+      If cn.State = ConnectionState.Open Then\par
+        cn.Close()\par
+      End If\par
+    End Try\par
+  End Function\par
+\par
+\pard\li720\sa120 End Class\par
+\par
+\par
+\lang2057\f2 Add a new class file \cf3\lang1033\f0\fs20 Emp.vb\cf0\lang2057\f2\fs22  and modify the code as follows (as in step 5):\par
+\par
+\pard\li720\sa50\lang1033\f1 Imports Microsoft.VisualBasic\par
+Imports System.Data\par
+Imports System.Xml.Serialization\par
+\par
+Public Class Emp\par
+\par
+  Private _empno As Integer\par
+  Private _ename As String\par
+  Private _sal As Double\par
+  Private _deptno As Integer\par
+\par
+  <XmlElement("Empno")> _\par
+  Public Property Empno() As Integer\par
+    Get\par
+      Return _empno\par
+    End Get\par
+    Set(ByVal value As Integer)\par
+      _empno = value\par
+    End Set\par
+  End Property\par
+\par
+  <XmlElement("Ename")> _\par
+  Public Property Ename() As String\par
+    Get\par
+      Return _ename\par
+    End Get\par
+    Set(ByVal value As String)\par
+      _ename = value\par
+    End Set\par
+  End Property\par
+\par
+  <XmlElement("Sal")> _\par
+  Public Property Sal() As Double\par
+    Get\par
+      Return _sal\par
+    End Get\par
+    Set(ByVal value As Double)\par
+      _sal = value\par
+    End Set\par
+  End Property\par
+\par
+  <XmlElement("Deptno")> _\par
+  Public Property Deptno() As Integer\par
+    Get\par
+      Return _deptno\par
+    End Get\par
+    Set(ByVal value As Integer)\par
+      _deptno = value\par
+    End Set\par
+  End Property\par
+\par
+  Public Function getList() As DataTable\par
+    Dim SQL As String\par
+    SQL = "SELECT Empno, Ename, Sal, Deptno "\par
+    SQL &= "FROM   Emp"\par
+\par
+    Try\par
+      Dim oDB As New OraDbLib\par
+      Dim dt As DataTable = oDB.getResultset(SQL)\par
+      dt.TableName = "Emp"\par
+      Return dt\par
+    Catch ex As Exception\par
+      Throw New Exception(ex.Message)\par
+    End Try\par
+  End Function\par
+\par
+  Public Sub Find(ByVal empno As String)\par
+    Dim SQL As String\par
+    SQL = "SELECT Empno, Ename, Sal, Deptno "\par
+    SQL &= "FROM   Emp"\par
+    SQL &= "WHERE  empno = '" & empno & "'"\par
+\par
+    Try\par
+      Dim oDB As New OraDbLib()\par
+      Dim dt As DataTable = oDB.getResultset(SQL)\par
+      If dt.Rows.Count = 0 Then\par
+        Throw New Exception("Employee not found")\par
+      Else\par
+        Me.Empno = dt.Rows(0)("empno")\par
+        Me.Ename = dt.Rows(0)("ename")\par
+        Me.Sal = dt.Rows(0)("sal")\par
+        Me.Deptno = dt.Rows(0)("deptno")\par
+      End If\par
+    Catch ex As Exception\par
+      Throw New Exception(ex.Message)\par
+    End Try\par
+  End Sub\par
+\par
+  Public Sub Add(ByVal oEmp As Emp)\par
+    Dim SQL As New System.Text.StringBuilder\par
+    SQL.Append("INSERT INTO Emp(empno,ename,sal,deptno) VALUES ")\par
+    SQL.Append("(")\par
+    SQL.Append("    " & oEmp.Empno & ", ")\par
+    SQL.Append("    '" & oEmp.Ename & "', ")\par
+    SQL.Append("    " & oEmp.Sal & ", ")\par
+    SQL.Append("    " & oEmp.Deptno & " ")\par
+    SQL.Append(")")\par
+    Try\par
+      Dim oDB As New OraDbLib()\par
+      oDB.SQLExecute(SQL.ToString)\par
+    Catch ex As Exception\par
+      Throw New Exception(ex.Message)\par
+    End Try\par
+  End Sub\par
+\par
+  Public Sub Update(ByVal oEmp As Emp)\par
+    Dim SQL As New System.Text.StringBuilder\par
+    SQL.Append("UPDATE Emp ")\par
+    SQL.Append("SET Ename='" & oEmp.Ename & "', ")\par
+    SQL.Append(" Sal=" & oEmp.Sal & ", ")\par
+    SQL.Append(" Deptno=" & oEmp.Deptno & " ")\par
+    SQL.Append(" WHERE  empno = " & oEmp.Empno)\par
+    Try\par
+      Dim oDB As New OraDbLib()\par
+      oDB.SQLExecute(Sql.ToString)\par
+    Catch ex As Exception\par
+      Throw New Exception(ex.Message)\par
+    End Try\par
+  End Sub\par
+\par
+  Public Sub Delete(ByVal empno As String)\par
+    Dim SQL As String\par
+    SQL = "DELETE FROM Emp "\par
+    SQL &= "WHERE empno = " & empno\par
+    Try\par
+      Dim oDB As New OraDbLib()\par
+      oDB.SQLExecute(SQL)\par
+    Catch ex As Exception\par
+      Throw New Exception(ex.Message)\par
+    End Try\par
+  End Sub\par
+\par
+\pard\li720\sa120 End Class\par
+\pard\f3\fs20\par
+}
+ 

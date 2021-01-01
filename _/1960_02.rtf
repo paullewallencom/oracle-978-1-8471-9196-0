@@ -1,0 +1,318 @@
+{\rtf1\ansi\ansicpg1252\deff0\deflang1033{\fonttbl{\f0\fmodern\fprq1\fcharset0 Lucida Console;}{\f1\froman\fprq2\fcharset0 Times New Roman;}{\f2\fswiss\fcharset0 Arial;}{\f3\fswiss\fprq2\fcharset0 Arial;}}
+{\colortbl ;\red0\green0\blue0;}
+{\stylesheet{ Normal;}{\s1 heading 1;}{\s2 heading 2;}}
+{\*\generator Msftedit 5.41.15.1507;}\viewkind4\uc1\pard\li360\sa50\f0\fs22\par
+\b\f1\fs30 Listing Out all .NET Data Providers Installed\f0\par
+\b0\fs22\par
+\par
+Imports System.Data.Common\par
+\par
+Public Class Form1\par
+\par
+  Private Sub btnProviders_Click(ByVal sender As \par
+    System.Object, ByVal e As System.EventArgs) Handles \par
+    btnProviders.Click\par
+\par
+\b     Dim dt As DataTable = _\par
+                DbProviderFactories.GetFactoryClasses()\par
+\b0     Me.DataGridView1.DataSource = dt\par
+\par
+  End Sub\par
+\par
+\pard\li360\sa120 End Class\par
+\pard\f2\fs20\par
+\pard\keepn\s2\sb320\sa60\cf1\lang2057\b\f3\fs28 Enumerating all Oracle Data Sources Available \par
+\pard\li360\sa50  \cf0\lang1033\b0\f0\fs22 Imports System.Data.Common\par
+\par
+Public Class Form2\par
+\par
+  Private Sub btnDataSources_Click(ByVal sender As \par
+    System.Object, ByVal e As System.EventArgs) Handles \par
+    btnDataSources.Click\par
+\par
+    Dim ProviderName As String = _\par
+           "Oracle.DataAccess.Client"\par
+    Dim fctry As DbProviderFactory = _\par
+           DbProviderFactories.GetFactory(ProviderName)\par
+    If (fctry.CanCreateDataSourceEnumerator) Then\par
+      Dim dsenum As DbDataSourceEnumerator = _\par
+                 fctry.CreateDataSourceEnumerator()\par
+      Dim dt As DataTable = dsenum.GetDataSources()\par
+      Me.DataGridView1.DataSource = dt\par
+    Else\par
+      MessageBox.Show("No datasources found")\par
+    End If\par
+\par
+  End Sub\par
+\par
+\pard\li360\sa120 End Class\par
+\pard\keepn\s2\sb320\sa60\cf1\lang2057\b\f3\fs28 Connecting Using .NET Data Provider Factory Classes\par
+\pard\li360\sa50\cf0\lang1033\b0\f0\fs22 Imports System.Data.Common\par
+\par
+Public Class Form3\par
+\par
+  Private Sub btnConnect_Click(ByVal sender As \par
+    System.Object, ByVal e As System.EventArgs) Handles \par
+    btnConnect.Click\par
+\par
+    'specify provider's invariant name\par
+    Dim ProviderName As String = _\par
+               "Oracle.DataAccess.Client"\par
+    'create factory instance for the provider\par
+    Dim fctry As DbProviderFactory = _\par
+        DbProviderFactories.GetFactory(ProviderName)\par
+    'create connection based on the factory\par
+    Dim Connection As Data.Common.DbConnection\par
+    Connection = fctry.CreateConnection\par
+    'specify connection string\par
+    Connection.ConnectionString = "Data Source=xe;\par
+                         user id=scott;password=tiger"\par
+    Try\par
+      'try connecting to oracle\par
+      Connection.Open()\par
+      'close the connection before exiting\par
+      Connection.Close()\par
+      MessageBox.Show("Succesfully connected")\par
+    Catch ex As Exception\par
+      'display error message if not connected\par
+      MessageBox.Show("Unable to connect. " & ex.Message)\par
+    End Try\par
+\par
+  End Sub\par
+\par
+\pard\li360\sa120 End Class\lang2057\par
+\pard\keepn\s2\sb320\sa60\cf1\b\f3\fs28 Connecting Using .NET Data Provider for OLEDB\par
+\pard\li360\sa50\cf0\lang1033\f0\fs22 Imports System.Data.OleDb\par
+\b0\par
+Public Class Form4\par
+\par
+  Private Sub btnConnect_Click(ByVal sender As \par
+    System.Object, ByVal e As System.EventArgs) Handles \par
+    btnConnect.Click\par
+\par
+\b     Dim cn As New OleDbConnection\par
+    cn.ConnectionString = "Provider=msdaora;\par
+        Data Source=xe;User Id=scott;Password=tiger;"\par
+\b0     Try\par
+      'try connecting to oracle\par
+      cn.Open()\par
+      'close the connection before exiting\par
+      cn.Close()\par
+      MessageBox.Show("Succesfully connected")\par
+    Catch ex As Exception\par
+      'display error message if not connected\par
+      MessageBox.Show("Unable to connect. " & ex.Message)\par
+    End Try\par
+\par
+  End Sub\par
+\pard\li360\sa120 End Class\par
+\pard\keepn\s2\sb320\sa60\cf1\lang2057\b\f3\fs28 Connecting Using .NET Data Provider for ODBC\par
+\pard\li360\sa50\cf0\lang1033\f0\fs22 Imports System.Data.odbc\par
+\b0\par
+Public Class Form5\par
+\par
+  Private Sub btnConnect_Click(ByVal sender As \par
+    System.Object, ByVal e As System.EventArgs) Handles \par
+    btnConnect.Click\par
+\par
+\b     Dim cn As New OdbcConnection\par
+    cn.ConnectionString = \par
+       "Driver=\{Microsoft ODBC for Oracle\};\par
+       Server=xe;Uid=scott;Pwd=tiger;"\par
+\b0\par
+    Try\par
+      'try connecting to oracle\par
+      cn.Open()\par
+      'close the connection before exiting\par
+      cn.Close()\par
+      MessageBox.Show("Succesfully connected")\par
+    Catch ex As Exception\par
+      'display error message if not connected\par
+      MessageBox.Show("Unable to connect. " & ex.Message)\par
+    End Try\par
+\par
+  End Sub\par
+\pard\li360\sa120 End Class\par
+\pard\keepn\s2\sb320\sa60\cf1\lang2057\b\f3\fs28 Connecting using Microsoft's .NET Data Provider for Oracle \par
+\pard\li360\sa50\cf0\lang1033\f0\fs22 Imports System.Data.OracleClient\par
+\b0\par
+Public Class Form6\par
+\par
+  Private Sub btnConnect_Click(ByVal sender As \par
+    System.Object, ByVal e As System.EventArgs) Handles \par
+    btnConnect.Click\par
+\par
+\b     Dim cn As New OracleConnection\par
+    cn.ConnectionString = "Data Source=xe;\par
+                        User Id=scott;Password=tiger;"\par
+\b0\par
+    Try\par
+      'try connecting to oracle\par
+      cn.Open()\par
+      'close the connection before exiting\par
+      cn.Close()\par
+      MessageBox.Show("Succesfully connected")\par
+    Catch ex As Exception\par
+      'display error message if not connected\par
+      MessageBox.Show("Unable to connect. " & ex.Message)\par
+    End Try\par
+\par
+  End Sub\par
+\pard\li360\sa120 End Class\par
+\pard\keepn\s2\sb320\sa60\cf1\lang2057\b\f3\fs28 Connecting Using Oracle Data Provider for .NET (ODP.NET) \par
+\pard\li360\sa50\cf0\lang1033\f0\fs22 Imports oracle.DataAccess.Client\par
+\b0\par
+Public Class Form7\par
+\par
+  Private Sub btnConnect_Click(ByVal sender As \par
+    System.Object, ByVal e As System.EventArgs) Handles \par
+    btnConnect.Click\par
+\par
+\b     Dim cn As New OracleConnection\par
+    cn.ConnectionString = "Data Source=xe;\par
+                     User Id=scott;Password=tiger;"\par
+\b0\par
+    Try\par
+      'try connecting to oracle\par
+      cn.Open()\par
+      'close the connection before exiting\par
+      cn.Close()\par
+      MessageBox.Show("Succesfully connected")\par
+    Catch ex As Exception\par
+      'display error message if not connected\par
+      MessageBox.Show("Unable to connect. " & ex.Message)\par
+    End Try\par
+  End Sub\par
+\par
+\pard\li360\sa120 End Class\par
+\pard\keepn\s2\sb320\sa60\cf1\lang2057\b\f3\fs28 Connecting with Connection Pooling \par
+\pard\li360\sa50\cf0\lang1033\b0\f0\fs22 Imports oracle.DataAccess.Client\par
+\par
+Public Class Form7\par
+\par
+  Private Sub btnConnect_Click(ByVal sender As \par
+    System.Object, ByVal e As System.EventArgs) Handles \par
+    btnConnect.Click\par
+\par
+    Dim cn As New OracleConnection\par
+\par
+    cn.ConnectionString = "Data Source=xe;\par
+                  User id=scott;Password=tiger;\par
+                  Min Pool Size= 5;\par
+                  Connection Lifetime=120;\par
+                  Connection Timeout=60;\par
+                  Incr Pool size=2;\par
+                  Decr Pool size=1"\par
+    Try\par
+      'try connecting to oracle\par
+      cn.Open()\par
+      'close the connection before exiting\par
+      cn.Close()\par
+      MessageBox.Show("Succesfully connected")\par
+    Catch ex As Exception\par
+      'display error message if not connected\par
+      MessageBox.Show("Unable to connect. " & ex.Message)\par
+    End Try\par
+  End Sub\par
+\par
+\pard\li360\sa120 End Class\par
+\pard\keepn\s2\sb320\sa60\cf1\lang2057\b\f3\fs28 Connecting with System-Level Privileges or DBA Privileges\par
+\pard\li360\sa50\cf0\lang1033\b0\f0\fs22 Imports oracle.DataAccess.Client\par
+\par
+Public Class Form7\par
+\par
+  Private Sub btnConnect_Click(ByVal sender As \par
+    System.Object, ByVal e As System.EventArgs) Handles \par
+    btnConnect.Click\par
+\par
+    Dim cn As New OracleConnection\par
+\par
+    cn.ConnectionString = "Data Source=xe;\par
+                User id=\b system\b0 ;Password=manager;\par
+                \b DBA Privilege=SYSOPER\b0 "\par
+    Try\par
+      'try connecting to oracle\par
+      cn.Open()\par
+      'close the connection before exiting\par
+      cn.Close()\par
+      MessageBox.Show("Succesfully connected")\par
+    Catch ex As Exception\par
+      'display error message if not connected\par
+      MessageBox.Show("Unable to connect. " & ex.Message)\par
+    End Try\par
+  End Sub\par
+\par
+\pard\li360\sa120 End Class\par
+\pard\keepn\s2\sb320\sa60\cf1\lang2057\b\f3\fs28 Dynamic Connecting String Using OracleConnectionStringBuilder and app.config\par
+\pard\li360\sa50\cf0\lang1033\b0\f0\fs22 Imports Oracle.DataAccess.Client\par
+\par
+Public Class Form9\par
+\par
+  Private Function getConnectionString() As String\par
+\b     Dim cnBuilder As New OracleConnectionStringBuilder\par
+    With cnBuilder\par
+      .DataSource = My.Settings.DataSource\par
+      .UserID = My.Settings.UserID\par
+      .Password = My.Settings.Password\par
+    End With\par
+\b0     Return cnBuilder.ConnectionString\par
+  End Function\par
+\par
+  Private Sub btnConnect_Click(ByVal sender As \par
+    System.Object, ByVal e As System.EventArgs) Handles \par
+    btnConnect.Click\par
+    Dim cn As New OracleConnection\par
+    cn.ConnectionString = getConnectionString()\par
+    Try\par
+      'try connecting to oracle\par
+      cn.Open()\par
+      'close the connection before exiting\par
+      cn.Close()\par
+      MessageBox.Show("Succesfully connected")\par
+    Catch ex As Exception\par
+      'display error message if not connected\par
+      MessageBox.Show("Unable to connect. " & ex.Message)\par
+    End Try\par
+  End Sub\par
+\pard\li360\sa120 End Class\par
+\pard\keepn\s2\sb320\sa60\cf1\lang2057\b\f3\fs28 Embedding a "tnsnames.ora" entry like connection string\par
+\pard\li360\sa50\cf0\lang1033\b0\f0\fs22 Imports oracle.DataAccess.Client\par
+\par
+Public Class Form7\par
+\par
+  Private Sub btnConnect_Click(ByVal sender As \par
+    System.Object, ByVal e As System.EventArgs) Handles \par
+    btnConnect.Click\par
+\par
+    Dim cn As New OracleConnection\par
+    Dim ConnStr As String\par
+    ConnStr = "Data Source = "\par
+    ConnStr &= "(DESCRIPTION = "\par
+    ConnStr &= "  (ADDRESS_LIST ="\par
+    ConnStr &= "    (ADDRESS = (PROTOCOL = TCP)\par
+                      (HOST = 127.0.0.1)(PORT = 1521))"\par
+    ConnStr &= "  )"\par
+    ConnStr &= "  (CONNECT_DATA ="\par
+    ConnStr &= "    (SERVICE_NAME = xe)"\par
+    ConnStr &= "  )"\par
+    ConnStr &= ");"\par
+    ConnStr &= "User Id=scott;"\par
+    ConnStr &= "password=tiger;"\par
+    cn.ConnectionString = ConnStr\par
+\par
+    Try\par
+      'try connecting to oracle\par
+      cn.Open()\par
+      'close the connection before exiting\par
+      cn.Close()\par
+      MessageBox.Show("Succesfully connected")\par
+    Catch ex As Exception\par
+      'display error message if not connected\par
+      MessageBox.Show("Unable to connect. " & ex.Message)\par
+    End Try\par
+  End Sub\par
+\par
+\pard\li360\sa120 End Class\lang2057\par
+\pard\lang1033\f2\fs20\par
+}
+ 

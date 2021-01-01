@@ -1,0 +1,1052 @@
+{\rtf1\ansi\ansicpg1252\deff0\deflang1033{\fonttbl{\f0\fswiss\fprq2\fcharset0 Arial;}{\f1\fmodern\fprq1\fcharset0 Lucida Console;}{\f2\fswiss\fcharset0 Arial;}{\f3\froman\fprq2\fcharset0 Times New Roman;}}
+{\colortbl ;\red0\green0\blue0;\red51\green102\blue255;\red255\green0\blue0;}
+{\stylesheet{ Normal;}{\s1 heading 1;}{\s2 heading 2;}{\s3 heading 3;}}
+{\*\generator Msftedit 5.41.15.1507;}\viewkind4\uc1\pard\keepn\s2\sb320\sa60\cf1\lang2057\b\f0\fs28 Executing Anonymous PL/SQL Blocks\par
+\pard\li360\sa50\cf0\lang1033\b0\f1\fs22 Private Sub btnExecuteDML_Click(ByVal sender As \par
+  System.Object, ByVal e As System.EventArgs) Handles \par
+  btnExecuteDML.Click\par
+    'create connection to db\par
+    Dim cn As New OracleConnection("Data Source=xe; _\par
+                        User Id=scott;Password=tiger")\par
+    Try\par
+      'build the anonymous PL/SQL\par
+      Dim sb As New System.Text.StringBuilder\par
+\b       sb.Append(" BEGIN")\par
+      sb.Append("   UPDATE emp SET sal = sal + 500;")\par
+      sb.Append("   COMMIT;")\par
+      sb.Append(" END;")\par
+\b0       'create command object \par
+      Dim cmd As New OracleCommand(sb.ToString, cn)\par
+      'open the connection\par
+      cmd.Connection.Open()\par
+      'execute the PL/SQL\par
+      cmd.ExecuteNonQuery()\par
+      'close the connection\par
+      cmd.Connection.Close()\par
+      'dispose the command\par
+      cmd.Dispose()\par
+      'display the message\par
+      MessageBox.Show("Succesfully executed")\par
+    Catch ex As Exception\par
+      'display if any error occurs\par
+      MessageBox.Show("Error: " & ex.Message)\par
+      'close the connection if it is still open\par
+      If cn.State = ConnectionState.Open Then\par
+        cn.Close()\par
+      End If\par
+    End Try\par
+\pard\li360\sa120 End Sub\par
+\pard\keepn\s2\sb320\sa60\cf1\lang2057\b\f0\fs28 Passing Information to Anonymous PL/SQL Blocks\par
+\pard\li360\sa50\cf0\lang1033\b0\f1\fs22 Private Sub btnExecuteDML_Click(ByVal sender As \par
+  System.Object, ByVal e As System.EventArgs) Handles \par
+  btnExecuteDML.Click\par
+    'create connection to db\par
+    Dim cn As New OracleConnection("Data Source=xe;_ \par
+                        User Id=scott;Password=tiger")\par
+    Try\par
+      'build the anonymous PL/SQL\par
+      Dim sb As New System.Text.StringBuilder\par
+      sb.Append(" DECLARE")\par
+      sb.Append("   amt NUMBER;")\par
+      sb.Append(" BEGIN")\par
+      sb.Append("   amt := :1;")\par
+      sb.Append("   UPDATE emp SET sal = sal + :1;")\par
+      sb.Append("   COMMIT;")\par
+      sb.Append(" END;")\par
+      'create command object \par
+      Dim cmd As New OracleCommand(sb.ToString, cn)\par
+      'provide parameter details\par
+\b       Dim p_amt As New OracleParameter\par
+      p_amt.ParameterName = ":1"\par
+      p_amt.OracleDbType = OracleDbType.Int32\par
+      p_amt.Direction = ParameterDirection.Input\par
+      p_amt.Value = 500\par
+\b0       cmd.Parameters.Add(p_amt)\par
+      'open the connection\par
+      cmd.Connection.Open()\par
+      'execute the PL/SQL\par
+      cmd.ExecuteNonQuery()\par
+      'close the connection\par
+      cmd.Connection.Close()\par
+      'dispose the command\par
+      cmd.Dispose()\par
+      'display the message\par
+      MessageBox.Show("Succesfully executed")\par
+    Catch ex As Exception\par
+      'display if any error occurs\par
+      MessageBox.Show("Error: " & ex.Message)\par
+      'close the connection if it is still open\par
+      If cn.State = ConnectionState.Open Then\par
+        cn.Close()\par
+      End If\par
+    End Try\par
+\pard\li360\sa120 End Sub\par
+\pard\keepn\s2\sb320\sa60\cf1\lang2057\b\f0\fs28 Retrieving Information from Anonymous Blocks\par
+\pard\li360\sa50\cf0\lang1033\b0\f1\fs22 Private Sub btnGetSingleValue_Click(ByVal sender As \par
+  System.Object, ByVal e As System.EventArgs) Handles \par
+  btnGetSingleValue.Click\par
+    'create connection to db\par
+    Dim cn As New OracleConnection("Data Source=xe; _\par
+                       User Id=scott;Password=tiger")\par
+    Try\par
+      'build the anonymous PL/SQL\par
+      Dim sb As New System.Text.StringBuilder\par
+      sb.Append(" BEGIN")\par
+      sb.Append("   SELECT MAX(sal) INTO :1 FROM emp;")\par
+      sb.Append(" END;")\par
+      'create command object \par
+      Dim cmd As New OracleCommand(sb.ToString, cn)\par
+\b       cmd.Parameters.Add(New OracleParameter(":1", \par
+        OracleDbType.Double, \par
+        ParameterDirection.Output))\par
+\b0       'open the connection\par
+      cmd.Connection.Open()\par
+      'execute the PL/SQL\par
+      cmd.ExecuteNonQuery()\par
+      'gather the result\par
+\b       Dim result As String = _\par
+        cmd.Parameters(":1").Value.ToString\par
+\b0       'close the connection\par
+      cmd.Connection.Close()\par
+      'dispose the command\par
+      cmd.Dispose()\par
+      'display the result\par
+      MessageBox.Show("Succesfully executed with \par
+                               result: " & result)\par
+    Catch ex As Exception\par
+      'display if any error occurs\par
+      MessageBox.Show("Error: " & ex.Message)\par
+      'close the connection if it is still open\par
+      If cn.State = ConnectionState.Open Then\par
+        cn.Close()\par
+      End If\par
+    End Try\par
+\pard\li360\sa120 End Sub\par
+\pard\keepn\s2\sb320\sa60\cf1\lang2057\b\f0\fs28 Executing a PL/SQL Stored Procedure \par
+\pard\cf0\lang1033\b0\f2\fs20\par
+\pard\sa120\lang2057\f3\fs22 A simple PL/SQL stored procedure which increments the salaries of all employees by 500:\par
+\pard\li360\sa50\lang1033\f1 CREATE OR REPLACE PROCEDURE p_Increment_Salary IS\par
+  BEGIN\par
+    UPDATE emp SET sal = sal + 500;\par
+    COMMIT;\par
+\pard\li360\sa120   END;\par
+\pard\sa120\lang2057\f3 Executing the above stored procedure using ODP.NET. \par
+\pard\li360\sa50\lang1033\f1\par
+Private Sub btnExecute_Click(ByVal sender As \par
+  System.Object, ByVal e As System.EventArgs) Handles \par
+  btnExecute.Click\par
+    'create connection to db\par
+    Dim cn As New OracleConnection("Data Source=xe; _\par
+                        User Id=scott;Password=tiger")\par
+    Try\par
+      'create command object \par
+      Dim cmd As New OracleCommand\par
+      With cmd\par
+        'specify that you are working with stored \par
+        'procedure\par
+\b         .CommandType = CommandType.StoredProcedure\par
+\b0         'provide the name of stored procedure\par
+\b         .CommandText = "p_Increment_Salary"\par
+\b0         'proceed with execution\par
+        .Connection = cn\par
+        .Connection.Open()\par
+\b         .ExecuteNonQuery()\par
+\b0         .Connection.Close()\par
+        .Dispose()\par
+      End With\par
+      MessageBox.Show("Succesfully executed")\par
+    Catch ex As Exception\par
+      'display if any error occurs\par
+      MessageBox.Show("Error: " & ex.Message)\par
+      'close the connection if it is still open\par
+      If cn.State = ConnectionState.Open Then\par
+        cn.Close()\par
+      End If\par
+    End Try\par
+\pard\li360\sa120 End Sub\par
+\pard\keepn\s2\sb320\sa60\cf1\lang2057\b\f0\fs28 Passing Parameter Values to a PL/SQL Stored Procedure \par
+\pard\sa120\cf0\b0\f3\fs22 A simple PL/SQL stored procedure which increments the salaries of all employees by the amount passed to it (in the form of a parameter):\par
+\pard\li360\sa50\lang1033\f1 CREATE OR REPLACE PROCEDURE p_Increment_Salary \par
+  (\par
+    amt IN NUMBER\par
+  ) \par
+  IS\par
+  BEGIN\par
+    UPDATE emp SET sal = sal + amt;\par
+    COMMIT;\par
+\pard\li360\sa120   END;\par
+\pard\li360\sa50\par
+\lang2057\f3 Executing the above stored procedure using ODP.NET\par
+\lang1033\f1\par
+Private Sub btnExecuteWithParameters_Click(ByVal sender \par
+  As System.Object, ByVal e As System.EventArgs) Handles \par
+  btnExecuteWithParameters.Click\par
+    'create connection to db\par
+    Dim cn As New OracleConnection("Data Source=xe; _\par
+                        User Id=scott;Password=tiger")\par
+    Try\par
+      'create command object \par
+      Dim cmd As New OracleCommand\par
+      With cmd\par
+        'specify that you are working with \par
+        'stored procedure\par
+        .CommandType = CommandType.StoredProcedure\par
+        'provide the name of stored procedure\par
+        .CommandText = "p_Increment_Salary"\par
+        'provide parameter details\par
+\b         Dim p_amt As New OracleParameter\par
+        p_amt.ParameterName = "amt"\par
+        p_amt.OracleDbType = OracleDbType.Int32\par
+        p_amt.Direction = ParameterDirection.Input\par
+        p_amt.Value = 500\par
+\b0         .Parameters.Add(p_amt)\par
+        'proceed with execution\par
+        .Connection = cn\par
+        .Connection.Open()\par
+        .ExecuteNonQuery()\par
+        .Connection.Close()\par
+        .Dispose()\par
+      End With\par
+      MessageBox.Show("Succesfully executed")\par
+    Catch ex As Exception\par
+      'display if any error occurs\par
+      MessageBox.Show("Error: " & ex.Message)\par
+      'close the connection if it is still open\par
+      If cn.State = ConnectionState.Open Then\par
+        cn.Close()\par
+      End If\par
+    End Try\par
+\pard\li360\sa120 End Sub\par
+\pard\keepn\s2\sb320\sa60\cf1\lang2057\b\f0\fs28 Using Anonymous PL/SQL Block to Execute a PL/SQL Stored Procedure\par
+\pard\li360\sa50\cf0\lang1033\b0\f1\fs22 Private Sub btnExecuteWithAnanymousBlock_Click(ByVal \par
+  sender As System.Object, ByVal e As System.EventArgs) \par
+  Handles btnExecuteWithAnanymousBlock.Click\par
+    'create connection to db\par
+    Dim cn As New OracleConnection("Data Source=xe; _\par
+                        User Id=scott;Password=tiger")\par
+    Try\par
+      'build the anonymous PL/SQL\par
+      Dim sb As New System.Text.StringBuilder\par
+\b       sb.Append(" DECLARE")\par
+      sb.Append("   amt NUMBER;")\par
+      sb.Append(" BEGIN")\par
+      sb.Append("   amt := :1;")\par
+      sb.Append("   p_increment_salary(amt => amt);")\par
+      sb.Append(" END;")\par
+\b0       'create command object \par
+      Dim cmd As New OracleCommand(sb.ToString, cn)\par
+      'provide parameter details\par
+\b       Dim p_amt As New OracleParameter\par
+      p_amt.ParameterName = ":1"\par
+      p_amt.OracleDbType = OracleDbType.Int32\par
+      p_amt.Direction = ParameterDirection.Input\par
+      p_amt.Value = 500\par
+\b0       cmd.Parameters.Add(p_amt)\par
+      'open the connection\par
+      cmd.Connection.Open()\par
+      'execute the PL/SQL\par
+      cmd.ExecuteNonQuery()\par
+      'close the connection\par
+      cmd.Connection.Close()\par
+      'dispose the command\par
+      cmd.Dispose()\par
+      'display the result\par
+      MessageBox.Show("Succesfully executed")\par
+    Catch ex As Exception\par
+      'display if any error occurs\par
+      MessageBox.Show("Error: " & ex.Message)\par
+      'close the connection if it is still open\par
+      If cn.State = ConnectionState.Open Then\par
+        cn.Close()\par
+      End If\par
+    End Try\par
+\pard\li360\sa120 End Sub\par
+\pard\keepn\s2\sb320\sa60\cf1\lang2057\b\f0\fs28 Retrieving Output Parameters from a PL/SQL Stored Procedure \par
+\pard\sa120\cf0\b0\f3\fs22 A simple PL/SQL stored procedure which retrieves the name of the highest earning employee:\par
+\pard\li360\sa50\lang1033\f1 CREATE OR REPLACE PROCEDURE p_Highest_Earned_Employee\par
+  (\par
+\b     HighestEarned OUT VARCHAR2\par
+\b0   )\par
+  IS\par
+  BEGIN\par
+    SELECT ename INTO HighestEarned\par
+    FROM emp\par
+    WHERE sal = (SELECT MAX(sal) FROM emp);\par
+\pard\li360\sa120   END;\par
+\pard\sa120\lang2057\f3 Executing the above stored procedure using ODP.NET. \par
+\pard\li360\sa50\lang1033\f1\par
+Private Sub btnOutParameter_Click(ByVal sender As \par
+  System.Object, ByVal e As System.EventArgs) Handles \par
+  btnOutParameter.Click\par
+    'create connection to db\par
+    Dim cn As New OracleConnection("Data Source=xe; _\par
+                      User Id=scott;Password=tiger")\par
+    Try\par
+      'create command object \par
+      Dim cmd As New OracleCommand\par
+      With cmd\par
+        'specify that you are working with \par
+        'stored procedure\par
+        .CommandType = CommandType.StoredProcedure\par
+        'provide the name of stored procedure\par
+        .CommandText = "p_Highest_Earned_Employee"\par
+\b         .Parameters.Add("HighestEarned", \par
+           OracleDbType.Varchar2, 20, Nothing, \par
+           ParameterDirection.Output)\par
+\b0         'proceed with execution\par
+        .Connection = cn\par
+        .Connection.Open()\par
+        .ExecuteNonQuery()\par
+\b         Dim Result As String = _\par
+          cmd.Parameters("HighestEarned").Value.ToString\par
+\b0         .Connection.Close()\par
+        .Dispose()\par
+        MessageBox.Show("Succesfully executed with \par
+                                  result: " & Result)\par
+      End With\par
+    Catch ex As Exception\par
+      'display if any error occurs\par
+      MessageBox.Show("Error: " & ex.Message)\par
+      'close the connection if it is still open\par
+      If cn.State = ConnectionState.Open Then\par
+        cn.Close()\par
+      End If\par
+    End Try\par
+\pard\li360\sa120 End Sub\par
+\pard\keepn\s2\sb320\sa60\cf1\lang2057\b\f0\fs28 Passing IN and Getting OUT Simultaneously \par
+\pard\li360\sa50\cf0\lang1033\b0\f1\fs22\par
+\pard\sa120\lang2057\f3 Following is a simple PL/SQL stored procedure which accepts employee number (input) and increment of salary (input) as parameters and returns back (output) the updated salary of the same employee:\par
+\pard\li360\sa50\lang1033\f1 CREATE OR REPLACE PROCEDURE p_Increment_Salary\par
+  (\par
+    eno IN NUMBER,\par
+\b     inc_sal IN OUT NUMBER\par
+\b0   )\par
+  IS\par
+  BEGIN\par
+    UPDATE emp SET sal = sal + inc_sal\par
+    WHERE empno = eno;\par
+    SELECT sal INTO inc_sal\par
+    FROM emp\par
+    WHERE empno = eno;\par
+\pard\li360\sa120   END;\par
+\pard\sa120\lang2057\f3 Executing the above stored procedure using ODP.NET. \par
+\pard\li360\sa50\lang1033\f1\par
+Private Sub btnINOUTDemo_Click(ByVal sender As \par
+  System.Object, ByVal e As System.EventArgs) Handles \par
+  btnINOUTDemo.Click\par
+    'create connection to db\par
+    Dim cn As New OracleConnection("Data Source=xe; _\par
+                        User Id=scott;Password=tiger")\par
+    Try\par
+      'create command object \par
+      Dim cmd As New OracleCommand\par
+      With cmd\par
+        'specify that you are working with \par
+        'stored procedure\par
+        .CommandType = CommandType.StoredProcedure\par
+        'provide the name of stored procedure\par
+        .CommandText = "p_Increment_Salary"\par
+        'provide parameter details\par
+        cmd.Parameters.Add("eno", OracleDbType.Decimal, \par
+                Nothing, 7369, ParameterDirection.Input)\par
+\b         cmd.Parameters.Add("inc_sal", \par
+                OracleDbType.Decimal, Nothing, 500, \par
+                ParameterDirection.InputOutput)\par
+\b0         'proceed with execution\par
+        .Connection = cn\par
+        .Connection.Open()\par
+        .ExecuteNonQuery()\par
+\b         Dim Result As String = _\par
+             cmd.Parameters("inc_sal").Value.ToString\par
+\b0         .Connection.Close()\par
+        .Dispose()\par
+        MessageBox.Show("Salary Succesfully increased to: \par
+                                             " & Result)\par
+      End With\par
+    Catch ex As Exception\par
+      'display if any error occurs\par
+      MessageBox.Show("Error: " & ex.Message)\par
+      'close the connection if it is still open\par
+      If cn.State = ConnectionState.Open Then\par
+        cn.Close()\par
+      End If\par
+    End Try\par
+\pard\li360\sa120 End Sub\par
+\pard\keepn\s2\sb320\sa60\cf1\lang2057\b\f0\fs28 Handling User-Defined Application Errors  \par
+\pard\sa120\cf0\b0\f3\fs22 Following is a simple PL/SQL stored procedure which accepts employee number (input) and increment of salary (input) as parameters and returns back (output) the updated salary of the same employee:\par
+\pard\li360\sa50\lang1033\f1 CREATE OR REPLACE PROCEDURE p_Increment_Salary\par
+  (\par
+    eno IN NUMBER,\par
+    inc_sal IN NUMBER\par
+  )\par
+  IS\par
+  BEGIN\par
+\b     IF inc_sal > 1000 THEN\par
+     RAISE_APPLICATION_ERROR(-20000,'Invalid salary to \par
+                                              update');\par
+    END IF;\par
+\b0     UPDATE emp SET sal = sal + inc_sal\par
+    WHERE empno = eno;\par
+\pard\li360\sa120   END;\par
+\pard\sa120\lang2057\f3 Execute the above stored procedure using ODP.NET. \par
+\pard\li360\sa50\lang1033\f1\par
+Private Sub btnErrorDemo_Click(ByVal sender As \par
+  System.Object, ByVal e As System.EventArgs) Handles \par
+  btnErrorDemo.Click\par
+    'create connection to db\par
+    Dim cn As New OracleConnection("Data Source=xe; _\par
+                       User Id=scott;Password=tiger")\par
+    Try\par
+      'create command object \par
+      Dim cmd As New OracleCommand\par
+      With cmd\par
+        'specify that you are working with \par
+        'stored procedure\par
+        .CommandType = CommandType.StoredProcedure\par
+        'provide the name of stored procedure\par
+        .CommandText = "p_Increment_Salary"\par
+        'provide parameter details\par
+        cmd.Parameters.Add("eno", OracleDbType.Decimal, \par
+                 Nothing, 7369, ParameterDirection.Input)\par
+        cmd.Parameters.Add("inc_sal", \par
+                OracleDbType.Decimal, Nothing, 1500, \par
+                ParameterDirection.Input)\par
+        'proceed with execution\par
+        .Connection = cn\par
+        .Connection.Open()\par
+        .ExecuteNonQuery()\par
+        .Connection.Close()\par
+        .Dispose()\par
+        MessageBox.Show("Salary Succesfully increased")\par
+      End With\par
+\b     Catch oex As OracleException\par
+      If oex.Number = 20000 Then\par
+        MessageBox.Show("Please provide valid increment. \par
+        It should be less than 1000")\par
+      Else\par
+        MessageBox.Show("Error: " & oex.Message)\par
+      End If\par
+\b0     Catch ex As Exception\par
+      'display if any error occurs\par
+      MessageBox.Show("Error: " & ex.Message)\par
+    Finally\par
+      'close the connection if it is still open\par
+      If cn.State = ConnectionState.Open Then\par
+        cn.Close()\par
+      End If\par
+    End Try\par
+\pard\li360\sa120 End Sub\par
+\pard\keepn\s2\sb320\sa60\cf1\lang2057\b\f0\fs28 Executing a PL/SQL User-Defined Function \par
+\pard\sa120\cf0\b0\f3\fs22 Following is a simple PL/SQL stored procedure which accepts employee number (input) and increment of salary (input) as parameters and returns back (output) the updated salary of the same employee:\par
+\pard\li360\sa50\lang1033\f1   CREATE OR REPLACE FUNCTION f_get_dname\par
+  (\par
+    eno IN NUMBER\par
+  )\par
+\b   RETURN VARCHAR2\par
+\b0   IS\par
+   dn dept.dname%TYPE;\par
+  BEGIN\par
+    SELECT dname INTO dn\par
+    FROM dept\par
+    WHERE deptno = (SELECT deptno FROM emp\par
+                        WHERE empno = eno);\par
+\b     RETURN dn;\par
+\b0   END;\par
+\pard\li360\sa120   /\par
+\pard\sa120\lang2057\f3 Execute the above code:\par
+\pard\li360\sa50\lang1033\f1\par
+Private Sub btnUDFDemo_Click(ByVal sender As \par
+  System.Object, ByVal e As System.EventArgs) Handles \par
+  btnUDFDemo.Click\par
+    'create connection to db\par
+    Dim cn As New OracleConnection("Data Source=xe; _\par
+                        User Id=scott;Password=tiger")\par
+    Try\par
+      'create command object \par
+      Dim cmd As New OracleCommand\par
+      With cmd\par
+        'specify that you are working with \par
+        'stored procedure\par
+        .CommandType = CommandType.StoredProcedure\par
+        'provide the name of stored procedure\par
+        .CommandText = "f_get_dname"\par
+        'provide parameter details\par
+\b         cmd.Parameters.Add("dname", \par
+                 OracleDbType.Varchar2, 20, Nothing, \par
+                 ParameterDirection.ReturnValue)\par
+\b0         cmd.Parameters.Add("eno", OracleDbType.Decimal, \par
+                 Nothing, 7369, ParameterDirection.Input)\par
+\par
+        'proceed with execution\par
+        .Connection = cn\par
+        .Connection.Open()\par
+        .ExecuteNonQuery()\par
+        Dim Result As String = _\par
+                 cmd.Parameters("dname").Value.ToString\par
+        .Connection.Close()\par
+        .Dispose()\par
+        MessageBox.Show("Succesfully executed with \par
+                                   result: " & Result)\par
+      End With\par
+\par
+    Catch ex As Exception\par
+      'display if any error occurs\par
+      MessageBox.Show("Error: " & ex.Message)\par
+      'close the connection if it is still open\par
+      If cn.State = ConnectionState.Open Then\par
+        cn.Close()\par
+      End If\par
+    End Try\par
+\pard\li360\sa120 End Sub\par
+\pard\sa120\lang2057\b\f3\fs32 Sample PL/SQL package created for demonstration:\par
+\pard\li360\sa50\lang1033\b0\f1\fs22 CREATE OR REPLACE PACKAGE pck_emp_operations IS\par
+  PROCEDURE IncreaseSalaries (v_IncSal NUMBER);\par
+  FUNCTION getSalaryGrade(v_empno NUMBER) RETURN \par
+                                          NUMBER;\par
+END pck_emp_operations;\par
+/\par
+\par
+CREATE OR REPLACE PACKAGE BODY pck_emp_operations IS\par
+  PROCEDURE IncreaseSalaries (v_IncSal NUMBER) IS\par
+ BEGIN\par
+    UPDATE emp SET sal = sal + v_IncSal;\par
+ END;\par
+\par
+  FUNCTION getSalaryGrade(v_empno NUMBER) \par
+                           RETURN NUMBER IS\par
+    v_grade NUMBER;\par
+ BEGIN  \par
+  SELECT grade INTO v_grade \par
+  FROM salgrade\par
+  WHERE (SELECT sal FROM emp WHERE empno=v_empno)\par
+  BETWEEN losal AND hisal;\par
+  RETURN v_grade;\par
+ END;\par
+\par
+END pck_emp_operations;\par
+\pard\li360\sa120 /\par
+\pard\f2\fs20\par
+\pard\keepn\s3\sb240\sa60\cf2\lang2057\b\f0\fs24 Executing a Procedure in a PL/SQL Package\fs26\par
+\pard\li360\sa50\cf0\lang1033\b0\f1\fs22 Private Sub btnExecuteSP_Click(ByVal sender As \par
+  System.Object, ByVal e As System.EventArgs) Handles \par
+  btnExecuteSP.Click\par
+    'create connection to db\par
+    Dim cn As New OracleConnection("Data Source=xe; _\par
+                          User Id=scott;Password=tiger")\par
+    Try\par
+      'create command object \par
+      Dim cmd As New OracleCommand\par
+      With cmd\par
+        'specify that you are working with stored \par
+        'procedure\par
+\b         .CommandType = CommandType.StoredProcedure\par
+\b0         'provide the name of routine\par
+\b         .CommandText = \par
+            "pck_emp_operations.IncreaseSalaries"\par
+\b0         'provide parameter details\par
+        Dim p_amt As New OracleParameter\par
+\b         p_amt.ParameterName = "v_IncSal"\par
+\b0         p_amt.OracleDbType = OracleDbType.Int32\par
+        p_amt.Direction = ParameterDirection.Input\par
+        p_amt.Value = 500\par
+        .Parameters.Add(p_amt)\par
+        'proceed with execution\par
+        .Connection = cn\par
+        .Connection.Open()\par
+\b         .ExecuteNonQuery()\par
+\b0         .Connection.Close()\par
+        .Dispose()\par
+      End With\par
+      MessageBox.Show("Succesfully executed")\par
+    Catch ex As Exception\par
+      'display if any error occurs\par
+      MessageBox.Show("Error: " & ex.Message)\par
+      'close the connection if it is still open\par
+      If cn.State = ConnectionState.Open Then\par
+        cn.Close()\par
+      End If\par
+    End Try\par
+\pard\li360\sa120 End Sub\par
+\pard\keepn\s3\sb240\sa60\cf2\lang2057\b\f0\fs26 Executing an User-Defined Function in a PL/SQL Package\par
+\pard\sa120\cf3\lang1033\b0\f1\fs18 getSalaryGrade\cf0\lang2057\f3\fs22  function available in \cf3\lang1033\f1\fs18 pck_emp_operations\cf0\lang2057\f3\fs22 :\par
+\pard\li360\sa50\lang1033\f1 FUNCTION getSalaryGrade(v_empno NUMBER) RETURN NUMBER IS\par
+  v_grade NUMBER;\par
+   BEGIN \par
+    SELECT grade INTO v_grade \par
+    FROM salgrade\par
+    WHERE (SELECT sal FROM emp WHERE empno=v_empno)\par
+    BETWEEN losal AND hisal;\par
+    RETURN v_grade;\par
+\pard\li360\sa120    END;\par
+\pard\sa120\lang2057\f3 The code which tries to execute the above function:\par
+\pard\li360\sa50\lang1033\f1 Private Sub btnExecuteUDF_Click(ByVal sender As \par
+  System.Object, ByVal e As System.EventArgs) Handles \par
+  btnExecuteUDF.Click\par
+    'create connection to db\par
+    Dim cn As New OracleConnection("Data Source=xe; _\par
+                       User Id=scott;Password=tiger")\par
+    Try\par
+      'create command object \par
+      Dim cmd As New OracleCommand\par
+      With cmd\par
+        'specify that you are working with \par
+        'stored procedure\par
+\b         .CommandType = CommandType.StoredProcedure\par
+\b0         'provide the name of routine\par
+\b         .CommandText = \par
+             "pck_emp_operations.getSalaryGrade"\par
+\b0         'provide parameter details\par
+\b         .Parameters.Add("v_grade", OracleDbType.Int16, \par
+                  Nothing, Nothing, \par
+                  ParameterDirection.ReturnValue)\par
+        .Parameters.Add("v_empno", OracleDbType.Decimal, \par
+                  Nothing, 7839, \par
+                  ParameterDirection.Input)\par
+\b0\par
+        'proceed with execution\par
+        .Connection = cn\par
+        .Connection.Open()\par
+\b         .ExecuteNonQuery()\par
+        Dim Result As String = _\par
+          .Parameters("v_grade").Value.ToString\par
+\b0         .Connection.Close()\par
+        .Dispose()\par
+\b         MessageBox.Show("Succesfully executed with \par
+                              result: " & Result)\par
+\b0       End With\par
+\par
+    Catch ex As Exception\par
+      'display if any error occurs\par
+      MessageBox.Show("Error: " & ex.Message)\par
+      'close the connection if it is still open\par
+      If cn.State = ConnectionState.Open Then\par
+        cn.Close()\par
+      End If\par
+    End Try\par
+\pard\li360\sa120 End Sub\par
+\pard\keepn\s3\sb240\sa60\cf2\lang2057\b\f0\fs26 Sending an Array to Oracle Database\par
+\pard\li360\sa50\cf0\lang1033\b0\f1\fs22 CREATE OR REPLACE PACKAGE pck_emp_tabledemo IS\par
+  TYPE t_num_array IS TABLE OF NUMBER INDEX BY \par
+                                  BINARY_INTEGER;\par
+  PROCEDURE IncreaseSalaries(v_EmpArray t_num_array, \par
+                                 v_IncSal number);\par
+END pck_emp_tabledemo;\par
+/\par
+\par
+CREATE OR REPLACE PACKAGE BODY pck_emp_tabledemo IS\par
+  PROCEDURE IncreaseSalaries(v_EmpArray t_num_array, \par
+                                v_IncSal number) IS\par
+  BEGIN\par
+    FOR i IN 1..v_EmpArray.LAST\par
+    LOOP\par
+    UPDATE emp SET sal = sal + v_IncSal\par
+    WHERE empno = v_EmpArray(i);\par
+    END LOOP;\par
+  END;\par
+END pck_emp_tabledemo;\par
+\pard\li360\sa120 /\par
+\pard\sa120\lang2057\f3 The following is the code which sends an array of values to a procedure available in a PL/SQL package:\par
+\pard\li360\sa50\lang1033\f1 Private Sub btnPassArrayToSP_Click(ByVal sender As \par
+  System.Object, ByVal e As System.EventArgs) Handles \par
+  btnPassArrayToSP.Click\par
+    'create connection to db\par
+    Dim cn As New OracleConnection("Data Source=xe; _\par
+                       User Id=scott;Password=tiger")\par
+    Try\par
+      'create command object \par
+      Dim cmd As New OracleCommand\par
+      With cmd\par
+        'specify that you are working with stored \par
+        'procedure\par
+        .CommandType = CommandType.StoredProcedure\par
+        'provide the name of stored procedure\par
+        .CommandText = \par
+            "pck_emp_tabledemo.IncreaseSalaries"\par
+        'provide parameter details\par
+\b         Dim p_empno As OracleParameter = \par
+        .Parameters.Add("v_EmpArray", \par
+        OracleDbType.Int32, ParameterDirection.Input)\par
+        p_empno.CollectionType = \par
+        OracleCollectionType.PLSQLAssociativeArray\par
+        p_empno.Value = New Int32() \{7788, 7876, 7934\}\par
+\b0         .Parameters.Add("v_IncSal", OracleDbType.Decimal, \par
+                  Nothing, 500, ParameterDirection.Input)\par
+        'proceed with execution\par
+        .Connection = cn\par
+        .Connection.Open()\par
+        .ExecuteNonQuery()\par
+        .Connection.Close()\par
+        .Dispose()\par
+        MessageBox.Show("Succesfully executed")\par
+      End With\par
+\par
+    Catch ex As Exception\par
+      'display if any error occurs\par
+      MessageBox.Show("Error: " & ex.Message)\par
+      'close the connection if it is still open\par
+      If cn.State = ConnectionState.Open Then\par
+        cn.Close()\par
+      End If\par
+    End Try\par
+\pard\li360\sa120 End Sub\par
+\pard\keepn\s3\sb240\sa60\cf2\lang2057\b\f0\fs26 Receiving an Array from Oracle Database\par
+\pard\li360\sa50\cf0\lang1033\b0\f1\fs22 CREATE OR REPLACE PACKAGE pck_emp_tabledemo IS\par
+  TYPE t_num_array IS TABLE OF NUMBER INDEX BY \par
+    BINARY_INTEGER;\par
+\b   PROCEDURE GetEmployeesOfDept(v_Deptno NUMBER, \par
+                     v_EmpArray OUT t_num_array);\par
+\b0 END pck_emp_tabledemo;\par
+/\par
+\par
+CREATE OR REPLACE PACKAGE BODY pck_emp_tabledemo IS\par
+\b   PROCEDURE GetEmployeesOfDept(v_Deptno NUMBER, \par
+    v_EmpArray OUT t_num_array) IS\par
+\b0       i NUMBER(3) := 1;\par
+  BEGIN\par
+   FOR e IN (SELECT empno FROM emp WHERE \par
+                            deptno = v_Deptno)\par
+    LOOP\par
+      v_EmpArray(i) := e.empno;\par
+      i := i + 1;\par
+    END LOOP;\par
+  END;\par
+\pard\li360\sa120 END pck_emp_tabledemo;\par
+\pard\keepn\s3\sb240\sa60\cf2\lang2057\b\i\f0 Package using Bulk Collect\par
+\pard\li360\sa50\cf0\lang1033\b0\i0\f1 CREATE OR REPLACE PACKAGE BODY pck_emp_tabledemo IS\par
+  PROCEDURE GetEmployeesOfDept(v_Deptno NUMBER, \par
+    v_EmpArray OUT t_num_array) IS\par
+  BEGIN\par
+  SELECT empno BULK COLLECT INTO v_EmpArray\par
+  FROM emp WHERE deptno = v_Deptno;\par
+  END;\par
+END pck_emp_tabledemo;\par
+\pard\li360\sa120 /\par
+\pard\sa120\lang2057\f3 Following is the code which receives an array of values from a procedure available in a PL/SQL package:\par
+\pard\li360\sa50\lang1033\f1 Private Sub btnReceiveAryFromSP_Click(ByVal sender As \par
+  System.Object, ByVal e As System.EventArgs) Handles \par
+  btnReceiveAryFromSP.Click\par
+    'create connection to db\par
+    Dim cn As New OracleConnection("Data Source=xe; _\par
+                          User Id=scott;Password=tiger")\par
+    Try\par
+      'create command object \par
+      Dim cmd As New OracleCommand\par
+      With cmd\par
+        'specify that you are working with \par
+        'stored procedure\par
+        .CommandType = CommandType.StoredProcedure\par
+        'provide the name of stored procedure\par
+        .CommandText = \par
+            "pck_emp_tabledemo.GetEmployeesOfDept"\par
+        'provide parameter details\par
+        .Parameters.Add("v_Deptno", OracleDbType.Int32,\par
+                          10, ParameterDirection.Input)\par
+\b         Dim p_empno As OracleParameter = _\par
+          .Parameters.Add("v_EmpArray", \par
+          OracleDbType.Int32, ParameterDirection.Output)\par
+        p_empno.CollectionType = _\par
+          OracleCollectionType.PLSQLAssociativeArray\par
+        p_empno.Size = 10\par
+\b0         'proceed with execution\par
+        .Connection = cn\par
+        .Connection.Open()\par
+        .ExecuteNonQuery()\par
+        'get the result out\par
+\b         Dim Empno() As _\par
+           Oracle.DataAccess.Types.OracleDecimal = \par
+                                      p_empno.Value\par
+\b0         .Connection.Close()\par
+        .Dispose()\par
+        Dim strEmpno As String = String.Empty\par
+\b         For Each en As \par
+        Oracle.DataAccess.Types.OracleDecimal In Empno\par
+          strEmpno &= en.ToString & ","\par
+        Next\par
+        MessageBox.Show("Succesfully executed with \par
+                               result: " & strEmpno)\par
+\b0       End With\par
+\par
+    Catch ex As Exception\par
+      'display if any error occurs\par
+      MessageBox.Show("Error: " & ex.Message)\par
+      'close the connection if it is still open\par
+      If cn.State = ConnectionState.Open Then\par
+        cn.Close()\par
+      End If\par
+    End Try\par
+\par
+\pard\li360\sa120 End Sub\par
+\pard\keepn\s3\sb240\sa60\cf2\lang2057\b\f0\fs26 Pulling from REF CURSOR Using OracleDataReader\par
+\pard\li360\sa50\cf0\lang1033\b0\f1\fs22 CREATE OR REPLACE PACKAGE pck_emp_Curdemo IS\par
+\b   TYPE t_cursor IS REF CURSOR;\par
+\b0   PROCEDURE GetList(cur_emp OUT t_cursor);\par
+END pck_emp_Curdemo;\par
+/\par
+\par
+CREATE OR REPLACE PACKAGE BODY pck_emp_Curdemo IS\par
+  PROCEDURE GetList(cur_emp OUT t_cursor) IS\par
+  BEGIN\par
+\b   OPEN cur_emp FOR\par
+  SELECT empno,ename,sal,deptno\par
+  FROM emp;\par
+\b0   END;\par
+END pck_emp_Curdemo;\par
+\pard\li360\sa120 /\par
+\pard\keepn\s3\sb240\sa60\cf2\lang2057\b\i\f0\fs26    Using\cf0\b0\f3\fs22  SYS_REFCURSOR\par
+\pard\li360\sa50  \lang1033\i0\f1 CREATE OR REPLACE PACKAGE pck_emp_Curdemo IS\par
+\b   PROCEDURE GetList(cur_emp OUT SYS_REFCURSOR);\par
+\b0 END pck_emp_Curdemo;\par
+/\par
+\par
+CREATE OR REPLACE PACKAGE BODY pck_emp_Curdemo IS\par
+\b   PROCEDURE GetList(cur_emp OUT SYS_REFCURSOR) IS\par
+\b0   BEGIN\par
+  OPEN cur_emp FOR \par
+  SELECT empno,ename,sal,deptno\par
+  FROM emp;\par
+  END;\par
+END pck_emp_Curdemo;\par
+\pard\li360\sa120 /\par
+\pard\sa120\lang2057\f3 The following is the code which displays all employees by pulling data from \cf3\lang1033\f1\fs18 REF\cf0\f3\fs22  \cf3\f1\fs18 CURSOR\cf0\lang2057\f3\fs22  using \cf3\lang1033\f1\fs18 OracleDataReader\cf0\lang2057\f3\fs22 :\par
+\pard\li360\sa50\lang1033\f1 Private Sub btnGetEmployees_Click(ByVal sender As \par
+  System.Object, ByVal e As System.EventArgs) Handles \par
+  btnGetEmployees.Click\par
+    'create connection to db\par
+    Dim cn As New OracleConnection("Data Source=xe; _\par
+                         User Id=scott;Password=tiger")\par
+    Try\par
+      'create command object \par
+      Dim cmd As New OracleCommand\par
+      With cmd\par
+        'specify that you are working with \par
+        'stored procedure\par
+        .CommandType = CommandType.StoredProcedure\par
+        'provide the name of stored procedure\par
+        .CommandText = "pck_emp_Curdemo.GetList"\par
+        'provide parameter details\par
+\b         .Parameters.Add("cur_emp", \par
+                    OracleDbType.RefCursor, \par
+                    ParameterDirection.Output)\par
+\b0         'proceed with execution\par
+        .Connection = cn\par
+        .Connection.Open()\par
+        'get the DataReader object from command object\par
+        Dim rdr As OracleDataReader = \par
+       cmd.ExecuteReader(CommandBehavior.CloseConnection)\par
+        'check if it has any rows\par
+        If rdr.HasRows Then\par
+          With Me.DataGridView1\par
+            'remove existing rows from grid\par
+            .Rows.Clear()\par
+            'get the number of columns\par
+            Dim ColumnCount As Integer = rdr.FieldCount\par
+            'add grid header row\par
+            For i As Integer = 0 To ColumnCount - 1\par
+              .Columns.Add(rdr.GetName(i), \par
+                                  rdr.GetName(i))\par
+            Next\par
+            .AutoSizeColumnsMode = \par
+             DataGridViewAutoSizeColumnsMode.ColumnHeader\par
+            'loop through every row\par
+            While rdr.Read\par
+              'get all row values into an array\par
+              Dim objCells(ColumnCount - 1) As Object\par
+              rdr.GetValues(objCells)\par
+              'add array as a row to grid\par
+              .Rows.Add(objCells)\par
+            End While\par
+          End With\par
+        Else\par
+          'display message if no rows found\par
+          MessageBox.Show("Not found")\par
+          Me.DataGridView1.Rows.Clear()\par
+        End If\par
+        'clear up the resources\par
+        rdr.Close()\par
+        .Connection.Close()\par
+        .Dispose()\par
+        MessageBox.Show("Succesfully executed")\par
+      End With\par
+    Catch ex As Exception\par
+      'display if any error occurs\par
+      MessageBox.Show("Error: " & ex.Message)\par
+      'close the connection if it is still open\par
+      If cn.State = ConnectionState.Open Then\par
+        cn.Close()\par
+      End If\par
+    End Try\par
+\pard\li360\sa120 End Sub\par
+\pard\keepn\s3\sb240\sa60\cf2\lang2057\b\f0\fs26 Filling a Dataset from REF CURSOR\par
+\pard\li360\sa50\cf0\lang1033\b0\f1\fs22 Private Sub btnGetEmployeesDS_Click(ByVal sender As \par
+  System.Object, ByVal e As System.EventArgs) Handles \par
+  btnGetEmployeesDS.Click\par
+    Me.DataGridView1.Rows.Clear()\par
+    'create connection to db\par
+    Dim cn As New OracleConnection("Data Source=xe; _\par
+                        User Id=scott;Password=tiger")\par
+    Try\par
+      'create command object \par
+      Dim cmd As New OracleCommand\par
+      With cmd\par
+        'specify that you are working with \par
+        'stored procedure\par
+        .CommandType = CommandType.StoredProcedure\par
+        'provide the name of stored procedure\par
+        .CommandText = "pck_emp_Curdemo.GetList"\par
+        'provide parameter details\par
+\b         .Parameters.Add("cur_emp", \par
+                     OracleDbType.RefCursor, \par
+                     ParameterDirection.Output)\par
+\b0         'proceed with execution\par
+        .Connection = cn\par
+      End With\par
+      Dim ds As New DataSet\par
+      Dim da As New OracleDataAdapter(cmd)\par
+      da.Fill(ds, "emp")\par
+      da.Dispose()\par
+      Me.DataGridView1.DataSource = ds.Tables("emp")\par
+      MessageBox.Show("Succesfully executed")\par
+    Catch ex As Exception\par
+      'display if any error occurs\par
+      MessageBox.Show("Error: " & ex.Message)\par
+      'close the connection if it is still open\par
+      If cn.State = ConnectionState.Open Then\par
+        cn.Close()\par
+      End If\par
+    End Try\par
+\pard\li360\sa120 End Sub\par
+\pard\keepn\s3\sb240\sa60\cf2\lang2057\b\f0\fs26 Working with Multiple Active Result Sets (MARS)\par
+\pard\li360\sa50\cf0\lang1033\b0\f1\fs22 CREATE OR REPLACE PACKAGE pck_emp IS\par
+\b   PROCEDURE get_all(p_emp OUT SYS_REFCURSOR, \par
+                    p_dept OUT SYS_REFCURSOR);\par
+\b0 END pck_emp;\par
+/\par
+\par
+CREATE OR REPLACE PACKAGE BODY pck_emp IS\par
+  PROCEDURE get_all(p_emp OUT SYS_REFCURSOR, \par
+                      p_dept OUT SYS_REFCURSOR) IS\par
+  BEGIN\par
+\b   OPEN p_emp FOR SELECT empno,ename,sal,deptno FROM emp;\par
+  OPEN p_dept FOR SELECT deptno,dname,loc FROM dept;\par
+\b0   END;\par
+END pck_emp;\par
+\pard\li360\sa120 /\par
+\pard\sa120\lang2057\f3 Following is the code, which reads both of those Ref Cursors using \cf3\lang1033\f1\fs18 OracleDataReader\cf0\lang2057\f3\fs22  and displays the result in two different grids:\par
+\pard\li360\sa50\lang1033\f1 Private Sub btnGetDataset_Click(ByVal sender As \par
+  System.Object, ByVal e As System.EventArgs) Handles \par
+  btnGetDataset.Click\par
+    Me.DataGridView1.Rows.Clear()\par
+    Me.DataGridView2.Rows.Clear()\par
+    'create connection to db\par
+    Dim cn As New OracleConnection("Data Source=xe; _\par
+                          User Id=scott;Password=tiger")\par
+    Try\par
+      'create command object \par
+      Dim cmd As New OracleCommand\par
+      With cmd\par
+        'specify that you are working with stored \par
+        'procedure\par
+        .CommandType = CommandType.StoredProcedure\par
+        'provide the name of stored procedure\par
+        .CommandText = "pck_emp.Get_All"\par
+        'provide parameter details\par
+\b         .Parameters.Add("p_emp", OracleDbType.RefCursor, \par
+                              ParameterDirection.Output)\par
+        .Parameters.Add("p_dept",OracleDbType.RefCursor, \par
+                              ParameterDirection.Output)\par
+\b0         'proceed with execution\par
+        .Connection = cn\par
+        .Connection.Open()\par
+        'execute the query\par
+\b         .ExecuteNonQuery()\par
+\b0         'get the DataReader objects from \par
+        'parameter objects\par
+\b         Dim rdr_emp As OracleDataReader = _\par
+            CType(.Parameters("p_emp").Value, \par
+            Oracle.DataAccess.Types.OracleRefCursor)\par
+            .GetDataReader\par
+        Dim rdr_dept As OracleDataReader = _\par
+            CType(.Parameters("p_dept").Value, \par
+            Oracle.DataAccess.Types.OracleRefCursor)\par
+            .GetDataReader\par
+\b0         'check if rdr_emp has any rows\par
+        If rdr_emp.HasRows Then\par
+          With Me.DataGridView1\par
+            'remove existing rows from grid\par
+            .Rows.Clear()\par
+            'get the number of columns\par
+            Dim ColumnCount As Integer = _\par
+                             rdr_emp.FieldCount\par
+            'add grid header row\par
+            For i As Integer = 0 To ColumnCount - 1\par
+              .Columns.Add(rdr_emp.GetName(i), \par
+                                 rdr_emp.GetName(i))\par
+            Next\par
+            .AutoSizeColumnsMode = \par
+             DataGridViewAutoSizeColumnsMode.ColumnHeader\par
+            'loop through every row\par
+            While rdr_emp.Read\par
+              'get all row values into an array\par
+              Dim objCells(ColumnCount - 1) As Object\par
+              rdr_emp.GetValues(objCells)\par
+              'add array as a row to grid\par
+              .Rows.Add(objCells)\par
+            End While\par
+          End With\par
+        End If\par
+       \par
+        'check if rdr_dept has any rows\par
+        If rdr_dept.HasRows Then\par
+          With Me.DataGridView2\par
+            'remove existing rows from grid\par
+            .Rows.Clear()\par
+            'get the number of columns\par
+            Dim ColumnCount As Integer = _\par
+                              rdr_dept.FieldCount\par
+            'add grid header row\par
+            For i As Integer = 0 To ColumnCount - 1\par
+              .Columns.Add(rdr_dept.GetName(i), \par
+                                rdr_emp.GetName(i))\par
+            Next\par
+            .AutoSizeColumnsMode = \par
+            DataGridViewAutoSizeColumnsMode.ColumnHeader\par
+            'loop through every row\par
+            While rdr_dept.Read\par
+              'get all row values into an array\par
+              Dim objCells(ColumnCount - 1) As Object\par
+              rdr_dept.GetValues(objCells)\par
+              'add array as a row to grid\par
+              .Rows.Add(objCells)\par
+            End While\par
+          End With\par
+        End If\par
+        'clear up the resources\par
+\b         rdr_emp.Close()\par
+\b0         'clear up the resources\par
+\b         rdr_dept.Close()\par
+\b0\par
+        .Connection.Close()\par
+        .Dispose()\par
+        MessageBox.Show("Succesfully executed")\par
+      End With\par
+\par
+    Catch ex As Exception\par
+      'display if any error occurs\par
+      MessageBox.Show("Error: " & ex.Message)\par
+      'close the connection if it is still open\par
+      If cn.State = ConnectionState.Open Then\par
+        cn.Close()\par
+      End If\par
+    End Try\par
+\pard\li360\sa120 End Sub\par
+\pard\keepn\s3\sb240\sa60\cf2\lang2057\b\f0\fs26\par
+\pard\cf0\lang1033\b0\f2\fs20\par
+\par
+\par
+\par
+\par
+\par
+ \par
+\par
+}
+ 
